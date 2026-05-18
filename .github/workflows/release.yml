@@ -48,12 +48,17 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
-            - name: Build arm64 + x64
+            - name: Build
+              run: npm run build
+
+            - name: Package arm64 + x64
               env:
                   CSC_LINK: ${{ secrets.CSC_LINK }}
                   CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
                   SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-              run: npx electron-builder --mac --arm64 --x64 --publish never
+              run: |
+                  if [[ -z "$CSC_LINK" ]]; then unset CSC_LINK CSC_KEY_PASSWORD; fi
+                  npx electron-builder --mac --arm64 --x64 --publish never
 
             - name: Verify bundle outputs
               run: |
