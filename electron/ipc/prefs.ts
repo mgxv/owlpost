@@ -7,7 +7,7 @@ import {
     IPC_CRASH_REPORTING_AVAIL,
     IPC_NOTIF_PERMISSION_GET,
 } from "../core/constants";
-import { getPrefs, setPref, type Prefs } from "../core/store";
+import { getPrefs, setPref, DEFAULTS, type Prefs } from "../core/store";
 import { applyBadge } from "../services/badge";
 import { applyLaunchAtLogin, isLaunchAtLoginEnabled } from "../services/launch-at-login";
 import { applyNativeTheme } from "../services/theme";
@@ -34,7 +34,7 @@ export function registerPrefsIpc(): void {
     ipcMain.handle(IPC_PREFS_SET, (_event, msg: unknown) => {
         if (typeof msg !== "object" || msg === null) return;
         const { key, value } = msg as Record<string, unknown>;
-        if (typeof key !== "string" || !(key in getPrefs())) return;
+        if (typeof key !== "string" || !(key in DEFAULTS)) return;
         if (!isValidPrefValue(key as keyof Prefs, value)) return;
 
         setPref(key as keyof Prefs, value as Prefs[keyof Prefs]);

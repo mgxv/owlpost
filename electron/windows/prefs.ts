@@ -3,8 +3,6 @@ import path from "path";
 import { getPref } from "../core/store";
 
 const PRELOAD_PREFS = path.join(__dirname, "../preload/prefs.js");
-const isDev = !app.isPackaged;
-
 // Match App.tsx: bg-neutral-900 / bg-neutral-100
 const BG_DARK = "#171717";
 const BG_LIGHT = "#f5f5f5";
@@ -48,7 +46,7 @@ export function initPrefsWindow(isQuitting: () => boolean): void {
         _ready = true;
     });
 
-    if (isDev) {
+    if (!app.isPackaged) {
         void win.loadURL("http://localhost:3000");
     } else {
         void win.loadFile(path.join(__dirname, "../../dist/index.html"));

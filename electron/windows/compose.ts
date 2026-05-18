@@ -1,7 +1,8 @@
 import { BrowserWindow } from "electron";
-import { GMAIL_ALLOWED_HOSTS, BLANK_COMPOSE_URL } from "../core/constants";
 import { getCurrentZoom } from "./gmail";
-import { PRELOAD_GMAIL, safeOpenExternal } from "./shared";
+import { PRELOAD_GMAIL, safeOpenExternal, GMAIL_ALLOWED_HOSTS } from "./shared";
+
+const BLANK_COMPOSE_URL = "https://mail.google.com/mail/?view=cm&fs=1";
 
 // extsrc=mailto tells Gmail to parse the full URI itself (recipient, subject, body).
 function parseMailtoUrl(mailtoUrl: string): string {
