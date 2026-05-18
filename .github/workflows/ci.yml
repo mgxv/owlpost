@@ -1,0 +1,128 @@
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: false
+
+jobs:
+    # ─── Repository hygiene ──────────────────────────────────────────────
+    # Fast, cheap, no toolchain setup. First to fail on a broken PR.
+
+    actionlint:
+        name: actionlint
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - name: Run actionlint
+              run: |
+                  bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+                  ./actionlint -color
+
+    shellcheck:
+        name: shellcheck
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: ludeeus/action-shellcheck@2.0.0
+              with:
+                  severity: warning
+
+    markdown-links:
+        name: markdown-links
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: lycheeverse/lychee-action@v2
+              with:
+                  args: --no-progress --max-concurrency 4 README.md
+                  fail: true
+                  failIfEmpty: false
+
+    # ─── TypeScript / Node ───────────────────────────────────────────────
+
+    tsc:
+        name: tsc
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: actions/setup-node@v6
+              with:
+                  node-version-file: ".node-version"
+                  cache: npm
+            - run: npm ci
+            - run: npm run typecheck
+
+    eslint:
+        name: eslint
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: actions/setup-node@v6
+              with:
+                  node-version-file: ".node-version"
+                  cache: npm
+            - run: npm ci
+            - run: npm run lint
+
+    prettier:
+        name: prettier
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: actions/setup-node@v6
+              with:
+                  node-version-file: ".node-version"
+                  cache: npm
+            - run: npm ci
+            - run: npm run format:check
+
+    build:
+        name: build
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+            - uses: actions/setup-node@v6
+              with:
+                  node-version-file: ".node-version"
+                  cache: npm
+            - run: npm ci
+            - run: npm run build
+
+    # ─── Bundle smoke test ───────────────────────────────────────────────
+    # Slowest job (~5–10 min). Builds unsigned .app + .dmg on macOS.
+    # Code signing and notarization belong in release.yml only.
+
+    electron-dist:
+        name: electron-dist
+        runs-on: macos-15
+        steps:
+            - uses: actions/checkout@v6
+            - uses: actions/setup-node@v6
+              with:
+                  node-version-file: ".node-version"
+                  cache: npm
+            - run: npm ci
+            - run: npm run build && npx electron-builder --publish never
+            - name: Verify bundle outputs
+              run: |
+                  test -d release/mac-arm64/Owlpost.app || { echo "Missing Owlpost.app"; exit 1; }
+                  test -f release/Owlpost-*.dmg         || { echo "Missing .dmg"; exit 1; }
+                  echo "Bundle verified."
+            - name: Upload .app + .dmg
+              uses: actions/upload-artifact@v7
+              with:
+                  name: Owlpost-macos
+                  path: |
+                      release/mac-arm64/Owlpost.app
+                      release/Owlpost-*.dmg
+                  if-no-files-found: error
+                  retention-days: 7

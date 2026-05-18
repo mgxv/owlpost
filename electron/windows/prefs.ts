@@ -1,0 +1,90 @@
+import { app, BrowserWindow, nativeTheme } from "electron";
+import path from "path";
+import { getPref } from "../core/store";
+
+const PRELOAD_PREFS = path.join(__dirname, "../preload/prefs.js");
+const isDev = !app.isPackaged;
+
+// Match App.tsx: bg-neutral-900 / bg-neutral-100
+const BG_DARK = "#171717";
+const BG_LIGHT = "#f5f5f5";
+
+let _prefsWindow: BrowserWindow | null = null;
+let _ready = false;
+
+export function getPrefsWindow(): BrowserWindow | null {
+    return _prefsWindow;
+}
+
+function resolveBackgroundColor(): string {
+    const theme = getPref("systemTheme");
+    const dark = theme === "dark" || (theme === "system" && nativeTheme.shouldUseDarkColors);
+    return dark ? BG_DARK : BG_LIGHT;
+}
+
+export function initPrefsWindow(isQuitting: () => boolean): void {
+    _ready = false;
+
+    const win = new BrowserWindow({
+        width: 500,
+        height: 450,
+        resizable: false,
+        minimizable: false,
+        maximizable: false,
+        show: false,
+        title: "Preferences",
+        titleBarStyle: "default",
+        backgroundColor: resolveBackgroundColor(),
+        webPreferences: {
+            preload: PRELOAD_PREFS,
+            contextIsolation: true,
+            sandbox: true,
+            nodeIntegration: false,
+            backgroundThrottling: false,
+        },
+    });
+
+    win.once("ready-to-show", () => {
+        _ready = true;
+    });
+
+    if (isDev) {
+        void win.loadURL("http://localhost:3000");
+    } else {
+        void win.loadFile(path.join(__dirname, "../../dist/index.html"));
+    }
+
+    win.on("close", (event) => {
+        if (!isQuitting()) {
+            event.preventDefault();
+            win.hide();
+        }
+    });
+
+    _prefsWindow = win;
+}
+
+export function togglePrefs(isQuitting: () => boolean): void {
+    if (!_prefsWindow || _prefsWindow.isDestroyed()) {
+        initPrefsWindow(isQuitting);
+    }
+
+    const win = _prefsWindow;
+    if (!win) return;
+    if (win.isVisible() && win.isFocused()) {
+        win.hide();
+        return;
+    }
+
+    const doShow = (): void => {
+        if (win.isMinimized()) win.restore();
+        win.show();
+        win.focus();
+    };
+
+    if (_ready) {
+        doShow();
+    } else {
+        win.once("ready-to-show", doShow);
+    }
+}

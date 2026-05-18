@@ -1,0 +1,78 @@
+{
+    "name": "owlpost",
+    "productName": "Owlpost",
+    "version": "0.1.0",
+    "author": "mgxv",
+    "description": "Gmail in a native window",
+    "license": "MIT",
+    "homepage": "https://github.com/mgxv/owlpost",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/mgxv/owlpost.git"
+    },
+    "bugs": {
+        "url": "https://github.com/mgxv/owlpost/issues"
+    },
+    "keywords": [
+        "gmail",
+        "electron",
+        "email",
+        "macos"
+    ],
+    "private": true,
+    "engines": {
+        "node": ">=24.15.0"
+    },
+    "main": "dist-electron/main.js",
+    "type": "commonjs",
+    "scripts": {
+        "dev": "npm run build:main && npm run build:preload && npm run build:injected && concurrently -k -n renderer,electron -c green,blue \"npm run dev:renderer\" \"npm run dev:electron\"",
+        "dev:renderer": "vite --port 3000",
+        "dev:electron": "wait-on tcp:3000 && electron .",
+        "build": "npm run build:renderer && npm run build:main && npm run build:preload && npm run build:injected",
+        "build:renderer": "vite build",
+        "build:main": "tsc -p tsconfig.node.json",
+        "build:preload": "esbuild electron/preload/prefs.ts electron/preload/gmail.ts --bundle --platform=node --target=es2022 --external:electron --outdir=dist-electron/preload",
+        "build:injected": "tsc -p tsconfig.injected.json",
+        "clean": "rm -rf dist dist-electron dist-injected release",
+        "clean:all": "rm -rf dist dist-electron dist-injected release node_modules package-lock.json && npm cache clean --force",
+        "dist": "npm run build && electron-builder",
+        "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit && tsc -p tsconfig.injected.json --noEmit && tsc -p tsconfig.preload.json --noEmit",
+        "check": "eslint . && prettier --check .",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "postinstall": "electron-builder install-app-deps"
+    },
+    "dependencies": {
+        "@heroicons/react": "^2.2.0",
+        "electron-log": "^5.4.4",
+        "electron-store": "^11.0.2",
+        "electron-updater": "^6.8.5",
+        "react": "^19.2.6",
+        "react-dom": "^19.2.6"
+    },
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "@tailwindcss/vite": "^4.3.0",
+        "@types/node": "^25.8.0",
+        "@types/react": "^19.2.14",
+        "@types/react-dom": "^19.2.3",
+        "@vitejs/plugin-react": "^6.0.2",
+        "concurrently": "^9.2.1",
+        "electron": "^42.1.0",
+        "electron-builder": "^26.10.0",
+        "esbuild": "^0.28.0",
+        "eslint": "^10.4.0",
+        "eslint-plugin-react-hooks": "^7.1.1",
+        "eslint-plugin-react-refresh": "^0.5.2",
+        "globals": "^17.6.0",
+        "prettier": "^3.8.3",
+        "tailwindcss": "^4.3.0",
+        "typescript": "^6.0.3",
+        "typescript-eslint": "^8.59.3",
+        "vite": "^8.0.13",
+        "wait-on": "^9.0.10"
+    }
+}

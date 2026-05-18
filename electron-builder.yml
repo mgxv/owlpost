@@ -1,0 +1,56 @@
+appId: com.github.mgxv.owlpost
+productName: Owlpost
+copyright: "Copyright © 2026"
+
+directories:
+    output: release
+    buildResources: build-resources
+
+files:
+    - dist/**
+    - dist-electron/**
+    - package.json
+
+extraResources:
+    - from: dist-injected/
+      to: injected/
+      filter: "*.js"
+
+asar: true
+
+mac:
+    icon: build-resources/icon.icns
+    category: public.app-category.productivity
+    minimumSystemVersion: "13.0"
+    hardenedRuntime: true
+    gatekeeperAssess: false
+    entitlements: build-resources/entitlements.mac.plist
+    entitlementsInherit: build-resources/entitlements.mac.plist
+    target:
+        - target: dmg
+        - target: zip
+    extendInfo:
+        CFBundleURLTypes:
+            - CFBundleURLSchemes:
+                  - mailto
+              CFBundleURLName: com.github.mgxv.owlpost.mailto
+              CFBundleTypeRole: Viewer
+
+dmg:
+    title: "${productName} ${version}"
+
+win:
+    icon: build-resources/icon.ico
+    target:
+        - target: nsis
+
+linux:
+    icon: build-resources/icon.png
+    category: Network
+    target:
+        - target: AppImage
+
+publish:
+    provider: github
+    owner: mgxv
+    repo: owlpost
