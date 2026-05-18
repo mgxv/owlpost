@@ -1,13 +1,5 @@
 import { ipcMain, Notification } from "electron";
-import {
-    IPC_FROM_GMAIL,
-    GMAIL_EVT_UNREAD_COUNT,
-    GMAIL_EVT_ACCOUNT_EMAIL,
-    GMAIL_EVT_NOTIFICATION,
-    GMAIL_EVT_INJECTED_ERROR,
-    GMAIL_EVT_TITLE_FORMAT_UNKNOWN,
-    GMAIL_EVT_MENU_ACTION_FAILED,
-} from "../core/constants";
+import { IPC_FROM_GMAIL } from "../core/constants";
 import { getPref } from "../core/store";
 import { updateBadge } from "../services/badge";
 import { getGmailWindow } from "../windows/gmail";
@@ -20,13 +12,13 @@ export function registerGmailIpc(): void {
         if (typeof name !== "string") return;
 
         switch (name) {
-            case GMAIL_EVT_UNREAD_COUNT:
+            case "unread-count":
                 if (typeof payload === "number") {
                     updateBadge(payload, getPref("showDockBadge"));
                 }
                 break;
 
-            case GMAIL_EVT_ACCOUNT_EMAIL: {
+            case "account-email": {
                 const win = getGmailWindow();
                 if (typeof payload === "string" && win && !win.isDestroyed()) {
                     win.setTitle(payload);
@@ -34,7 +26,7 @@ export function registerGmailIpc(): void {
                 break;
             }
 
-            case GMAIL_EVT_NOTIFICATION:
+            case "notification":
                 if (
                     getPref("notificationsEnabled") &&
                     Notification.isSupported() &&
@@ -46,9 +38,9 @@ export function registerGmailIpc(): void {
                 }
                 break;
 
-            case GMAIL_EVT_INJECTED_ERROR:
-            case GMAIL_EVT_TITLE_FORMAT_UNKNOWN:
-            case GMAIL_EVT_MENU_ACTION_FAILED:
+            case "injected-script-error":
+            case "title-format-unknown":
+            case "menu-action-failed":
                 logger.warn(`[injected] ${name}:`, payload);
                 break;
         }

@@ -1,13 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Prefs } from "./preload.d";
 
-const KEY_THEME = "systemTheme" as const;
-const KEY_DEFAULT_ZOOM = "defaultZoom" as const;
-const KEY_SHOW_DOCK_BADGE = "showDockBadge" as const;
-const KEY_LAUNCH_AT_STARTUP = "launchAtStartup" as const;
-const KEY_CRASH_REPORTING = "crashReporting" as const;
-const KEY_NOTIFICATIONS_ENABLED = "notificationsEnabled" as const;
-
 export type SystemTheme = Prefs["systemTheme"];
 
 type UsePreferences = Prefs & {
@@ -38,7 +31,7 @@ export function usePreferences(): UsePreferences {
                     .catch(() => prefs.launchAtStartup);
 
                 if (actualLaunchAtStartup !== prefs.launchAtStartup) {
-                    await window.owlpost.prefs.set(KEY_LAUNCH_AT_STARTUP, actualLaunchAtStartup);
+                    await window.owlpost.prefs.set("launchAtStartup", actualLaunchAtStartup);
                 }
 
                 if (cancelled) return;
@@ -67,16 +60,16 @@ export function usePreferences(): UsePreferences {
 
     return {
         systemTheme,
-        setSystemTheme: makeSetter(KEY_THEME, setSystemThemeState),
+        setSystemTheme: makeSetter("systemTheme", setSystemThemeState),
         defaultZoom,
-        setDefaultZoom: makeSetter(KEY_DEFAULT_ZOOM, setDefaultZoomState),
+        setDefaultZoom: makeSetter("defaultZoom", setDefaultZoomState),
         showDockBadge,
-        setShowDockBadge: makeSetter(KEY_SHOW_DOCK_BADGE, setShowDockBadgeState),
+        setShowDockBadge: makeSetter("showDockBadge", setShowDockBadgeState),
         launchAtStartup,
-        setLaunchAtStartup: makeSetter(KEY_LAUNCH_AT_STARTUP, setLaunchAtStartupState),
+        setLaunchAtStartup: makeSetter("launchAtStartup", setLaunchAtStartupState),
         crashReporting,
-        setCrashReporting: makeSetter(KEY_CRASH_REPORTING, setCrashReportingState),
+        setCrashReporting: makeSetter("crashReporting", setCrashReportingState),
         notificationsEnabled,
-        setNotificationsEnabled: makeSetter(KEY_NOTIFICATIONS_ENABLED, setNotificationsEnabledState),
+        setNotificationsEnabled: makeSetter("notificationsEnabled", setNotificationsEnabledState),
     };
 }

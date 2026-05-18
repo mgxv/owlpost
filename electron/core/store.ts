@@ -1,7 +1,5 @@
-export type SystemTheme = "light" | "dark" | "system";
-
 export interface Prefs {
-    systemTheme: SystemTheme;
+    systemTheme: "light" | "dark" | "system";
     defaultZoom: number;
     showDockBadge: boolean;
     launchAtStartup: boolean;
@@ -18,12 +16,10 @@ export const DEFAULTS: Prefs = {
     notificationsEnabled: false,
 };
 
-interface TypedStore {
+let _store: {
     get<K extends keyof Prefs>(key: K): Prefs[K];
     set<K extends keyof Prefs>(key: K, value: Prefs[K]): void;
-}
-
-let _store: TypedStore;
+};
 
 // electron-store v11 is ESM-only; loaded via dynamic import inside whenReady().
 // Must be awaited before any getPref or setPref call.

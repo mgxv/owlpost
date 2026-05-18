@@ -2,9 +2,12 @@ import { app, BrowserWindow } from "electron";
 import { readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { logger } from "../core/logger";
-import { GMAIL_INITIAL_URL, GMAIL_ALLOWED_HOSTS } from "../core/constants";
 import { getPref } from "../core/store";
-import { PRELOAD_GMAIL, safeOpenExternal } from "./shared";
+import { PRELOAD_GMAIL, safeOpenExternal, GMAIL_ALLOWED_HOSTS } from "./shared";
+
+// ServiceLogin URL ensures logged-out users land on the sign-in form rather than a workspace redirect.
+const GMAIL_INITIAL_URL =
+    "https://accounts.google.com/ServiceLogin?service=mail&continue=https%3A%2F%2Fmail.google.com%2Fmail%2Fu%2F0";
 
 function loadInjected(name: string): string {
     const dir = app.isPackaged

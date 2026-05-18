@@ -41,8 +41,7 @@ if (!app.requestSingleInstanceLock()) {
     process.exit(0);
 }
 
-let isQuitting = false as boolean;
-const getIsQuitting = (): boolean => isQuitting;
+let isQuitting = false;
 const markQuitting = (): void => {
     isQuitting = true;
 };
@@ -101,12 +100,12 @@ void app.whenReady().then(async () => {
     registerPrefsIpc();
     registerSystemIpc(markQuitting);
 
-    createGmailWindow(windowStatePath, getIsQuitting);
-    initPrefsWindow(getIsQuitting);
+    createGmailWindow(windowStatePath, () => isQuitting);
+    initPrefsWindow(() => isQuitting);
 
     const menu = buildMenu({
         onPreferences: () => {
-            togglePrefs(getIsQuitting);
+            togglePrefs(() => isQuitting);
         },
         onCompose: openCompose,
         onReload: reloadGmail,
