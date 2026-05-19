@@ -2,10 +2,22 @@ import { ipcMain, Notification } from "electron";
 import { IPC_FROM_GMAIL } from "../core/constants";
 import { getPref } from "../core/store";
 import { updateBadge } from "../services/badge";
-import { getGmailWindow } from "../windows/gmail";
+import { getGmailWebContents, openFindbar } from "../windows/gmail";
+import { showPrefs } from "../windows/prefs";
 import { logger } from "../core/logger";
 
 export function registerGmailIpc(): void {
+    ipcMain.on("tb:go-back", () => {
+        const wc = getGmailWebContents();
+        if (wc?.navigationHistory.canGoBack()) wc.navigationHistory.goBack();
+    });
+    ipcMain.on("tb:go-forward", () => {
+        const wc = getGmailWebContents();
+        if (wc?.navigationHistory.canGoForward()) wc.navigationHistory.goForward();
+    });
+    ipcMain.on("tb:open-prefs", showPrefs);
+    ipcMain.on("tb:open-find", openFindbar);
+
     ipcMain.on(IPC_FROM_GMAIL, (_event, msg: unknown) => {
         if (typeof msg !== "object" || msg === null) return;
         const { name, payload } = msg as Record<string, unknown>;
@@ -17,14 +29,6 @@ export function registerGmailIpc(): void {
                     updateBadge(payload, getPref("showDockBadge"));
                 }
                 break;
-
-            case "account-email": {
-                const win = getGmailWindow();
-                if (typeof payload === "string" && win && !win.isDestroyed()) {
-                    win.setTitle(payload);
-                }
-                break;
-            }
 
             case "notification":
                 if (

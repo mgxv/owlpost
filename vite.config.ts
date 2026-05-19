@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { resolve } from "path";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
@@ -17,7 +18,10 @@ export default defineConfig(({ mode }) => ({
         target: ["chrome130"],
         sourcemap: mode === "development",
         rollupOptions: {
-            input: "index.html",
+            input: {
+                main: resolve(__dirname, "index.html"),
+                titlebar: resolve(__dirname, "titlebar.html"),
+            },
         },
     },
 }));

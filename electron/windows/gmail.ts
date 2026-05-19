@@ -1,9 +1,32 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, WebContentsView, nativeTheme, type WebContents } from "electron";
 import { readFileSync, writeFileSync } from "fs";
 import path from "path";
+import Findbar from "electron-findbar";
 import { logger } from "../core/logger";
 import { getPref } from "../core/store";
 import { PRELOAD_GMAIL, safeOpenExternal, GMAIL_ALLOWED_HOSTS } from "./shared";
+
+const TITLEBAR_HEIGHT = 32;
+const PRELOAD_TITLEBAR = path.join(__dirname, "../preload/titlebar.js");
+
+Findbar.setDefaultTheme("system");
+Findbar.setDefaultBoundsHandler((parent, bar) => ({
+    x: parent.x + parent.width - bar.width - 20,
+    y: parent.y + (process.platform === "darwin" ? TITLEBAR_HEIGHT : 0) + 8,
+    width: bar.width,
+    height: bar.height,
+}));
+Findbar.setDefaultWindowHandler((win) => {
+    win.setBackgroundColor(nativeTheme.shouldUseDarkColors ? "#1f1f1f" : "#ffffff");
+});
+
+function loadTitlebar(wc: WebContents): void {
+    if (app.isPackaged) {
+        void wc.loadFile(path.join(__dirname, "../../dist/titlebar.html"));
+    } else {
+        void wc.loadURL("http://localhost:3000/titlebar.html");
+    }
+}
 
 // ServiceLogin URL ensures logged-out users land on the sign-in form rather than a workspace redirect.
 const GMAIL_INITIAL_URL =
@@ -16,9 +39,8 @@ function loadInjected(name: string): string {
     return readFileSync(path.join(dir, name), "utf-8");
 }
 
-async function injectGmailScripts(win: BrowserWindow): Promise<void> {
-    if (win.isDestroyed()) return;
-    const wc = win.webContents;
+async function injectGmailScripts(wc: WebContents): Promise<void> {
+    if (wc.isDestroyed()) return;
     try {
         await wc.executeJavaScript(loadInjected("title-watcher.js"));
         await wc.executeJavaScript(loadInjected("notifications.js"));
@@ -39,15 +61,38 @@ const ZOOM_MIN = 50;
 const ZOOM_MAX = 150;
 
 let _gmailWindow: BrowserWindow | null = null;
+let _gmailView: WebContentsView | null = null;
+let _titlebarView: WebContentsView | null = null;
 let _currentZoom = 100;
 let _windowStatePath = "";
+
+function pushTitlebarState(wc: WebContents): void {
+    if (!_titlebarView || _titlebarView.webContents.isDestroyed()) return;
+    const title = wc.getTitle().match(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/i)?.[0] ?? "Gmail";
+    _titlebarView.webContents.send("tb:update", {
+        canGoBack: wc.navigationHistory.canGoBack(),
+        canGoForward: wc.navigationHistory.canGoForward(),
+        title,
+    });
+}
 
 export function getGmailWindow(): BrowserWindow | null {
     return _gmailWindow;
 }
 
+export function getGmailWebContents(): WebContents | null {
+    if (!_gmailView || _gmailView.webContents.isDestroyed()) return null;
+    return _gmailView.webContents;
+}
+
 export function getCurrentZoom(): number {
     return _currentZoom;
+}
+
+export function openFindbar(): void {
+    const wc = getGmailWebContents();
+    if (!wc) return;
+    Findbar.from(wc).open();
 }
 
 export function showGmailWindow(): void {
@@ -58,31 +103,33 @@ export function showGmailWindow(): void {
 }
 
 export function reloadGmail(): void {
-    if (_gmailWindow && !_gmailWindow.isDestroyed()) _gmailWindow.webContents.reload();
+    if (_gmailView && !_gmailView.webContents.isDestroyed()) _gmailView.webContents.reload();
 }
 
 export function executeInGmail(js: string): void {
-    if (!_gmailWindow || _gmailWindow.isDestroyed()) return;
-    _gmailWindow.webContents.executeJavaScript(js).catch((e: unknown) => {
+    if (!_gmailView || _gmailView.webContents.isDestroyed()) return;
+    _gmailView.webContents.executeJavaScript(js).catch((e: unknown) => {
         logger.warn("[gmail] executeJavaScript failed:", e);
     });
 }
 
 export function zoomIn(): void {
-    if (_gmailWindow && !_gmailWindow.isDestroyed()) applyZoom(_gmailWindow, _currentZoom + ZOOM_STEP);
+    if (_gmailWindow && !_gmailWindow.isDestroyed()) applyZoom(_currentZoom + ZOOM_STEP);
 }
 
 export function zoomOut(): void {
-    if (_gmailWindow && !_gmailWindow.isDestroyed()) applyZoom(_gmailWindow, _currentZoom - ZOOM_STEP);
+    if (_gmailWindow && !_gmailWindow.isDestroyed()) applyZoom(_currentZoom - ZOOM_STEP);
 }
 
 export function zoomReset(): void {
-    if (_gmailWindow && !_gmailWindow.isDestroyed()) applyZoom(_gmailWindow, getPref("defaultZoom"));
+    if (_gmailWindow && !_gmailWindow.isDestroyed()) applyZoom(getPref("defaultZoom"));
 }
 
-function applyZoom(win: BrowserWindow, percent: number): void {
+function applyZoom(percent: number): void {
     _currentZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, percent));
-    win.webContents.setZoomFactor(_currentZoom / 100);
+    if (_gmailView && !_gmailView.webContents.isDestroyed()) {
+        _gmailView.webContents.setZoomFactor(_currentZoom / 100);
+    }
 }
 
 function loadWindowState(): WindowState {
@@ -104,12 +151,12 @@ function saveWindowState(win: BrowserWindow): void {
     }
 }
 
-function attachNavigationHandlers(win: BrowserWindow): void {
-    win.webContents.setWindowOpenHandler(({ url }) => {
+function attachNavigationHandlers(wc: WebContents): void {
+    wc.setWindowOpenHandler(({ url }) => {
         try {
             const host = new URL(url).hostname;
             if (GMAIL_ALLOWED_HOSTS.has(host)) {
-                void win.webContents.loadURL(url);
+                void wc.loadURL(url);
             } else {
                 safeOpenExternal(url);
             }
@@ -119,7 +166,7 @@ function attachNavigationHandlers(win: BrowserWindow): void {
         return { action: "deny" };
     });
 
-    win.webContents.on("will-navigate", (event, url) => {
+    wc.on("will-navigate", (event, url) => {
         try {
             const host = new URL(url).hostname;
             if (!GMAIL_ALLOWED_HOSTS.has(host)) {
@@ -137,11 +184,26 @@ export function createGmailWindow(windowStatePath: string, isQuitting: () => boo
     _currentZoom = getPref("defaultZoom");
 
     const state = loadWindowState();
+    const isMac = process.platform === "darwin";
+    const yOffset = isMac ? TITLEBAR_HEIGHT : 0;
+
     const win = new BrowserWindow({
         ...state,
+        show: false,
         minWidth: 800,
         minHeight: 600,
-        title: "",
+        title: "Owlpost",
+        titleBarStyle: isMac ? "hiddenInset" : "default",
+        ...(isMac ? { trafficLightPosition: { x: 12, y: 10 } } : {}),
+        webPreferences: {
+            contextIsolation: true,
+            sandbox: true,
+            nodeIntegration: false,
+        },
+    });
+
+    // ── Gmail content view ────────────────────────────────────────────────────
+    const gmailView = new WebContentsView({
         webPreferences: {
             preload: PRELOAD_GMAIL,
             contextIsolation: true,
@@ -149,23 +211,25 @@ export function createGmailWindow(windowStatePath: string, isQuitting: () => boo
             nodeIntegration: false,
         },
     });
+    _gmailView = gmailView;
+
+    const { width, height } = win.getBounds();
+    win.contentView.addChildView(gmailView);
+    gmailView.setBounds({ x: 0, y: yOffset, width, height: height - yOffset });
 
     // Prevents badge and notification updates from being throttled when the window is hidden.
-    win.webContents.setBackgroundThrottling(false);
-    void win.loadURL(GMAIL_INITIAL_URL);
-    applyZoom(win, _currentZoom);
+    gmailView.webContents.setBackgroundThrottling(false);
+    void gmailView.webContents.loadURL(GMAIL_INITIAL_URL);
+    applyZoom(_currentZoom);
 
-    win.webContents.on("did-finish-load", () => {
-        injectGmailScripts(win).catch((e: unknown) => {
+    gmailView.webContents.on("did-finish-load", () => {
+        injectGmailScripts(gmailView.webContents).catch((e: unknown) => {
             logger.error("[inject] did-finish-load:", e);
         });
+        if (isMac) pushTitlebarState(gmailView.webContents);
     });
 
-    win.on("page-title-updated", (event) => {
-        event.preventDefault();
-    });
-
-    win.webContents.on("did-fail-load", (_event, errorCode, errorDescription, _url, isMainFrame) => {
+    gmailView.webContents.on("did-fail-load", (_event, errorCode, errorDescription, _url, isMainFrame) => {
         if (!isMainFrame) return;
         if (errorCode === -3) return; // ERR_ABORTED — user navigated away before load completed
         logger.error("[gmail] did-fail-load:", errorCode, errorDescription);
@@ -176,10 +240,43 @@ export function createGmailWindow(windowStatePath: string, isQuitting: () => boo
                 `<button onclick="window.location.assign('${GMAIL_INITIAL_URL}')" style="padding:8px 16px;cursor:pointer">Retry</button>` +
                 `</body></html>`,
         );
-        void win.webContents.loadURL(`data:text/html;charset=utf-8,${html}`);
+        void gmailView.webContents.loadURL(`data:text/html;charset=utf-8,${html}`);
     });
 
-    attachNavigationHandlers(win);
+    attachNavigationHandlers(gmailView.webContents);
+
+    if (isMac) {
+        gmailView.webContents.on("did-navigate", () => {
+            pushTitlebarState(gmailView.webContents);
+        });
+        gmailView.webContents.on("did-navigate-in-page", () => {
+            pushTitlebarState(gmailView.webContents);
+        });
+        gmailView.webContents.on("page-title-updated", () => {
+            pushTitlebarState(gmailView.webContents);
+        });
+    }
+
+    // ── Titlebar view (macOS only) ────────────────────────────────────────────
+    if (isMac) {
+        const tbView = new WebContentsView({
+            webPreferences: {
+                preload: PRELOAD_TITLEBAR,
+                contextIsolation: true,
+                sandbox: true,
+                nodeIntegration: false,
+            },
+        });
+        win.contentView.addChildView(tbView);
+        tbView.setBounds({ x: 0, y: 0, width, height: TITLEBAR_HEIGHT });
+        tbView.webContents.once("did-finish-load", () => {
+            win.show();
+        });
+        loadTitlebar(tbView.webContents);
+        _titlebarView = tbView;
+    } else {
+        win.show();
+    }
 
     // Hide on close so the Gmail session (cookies, service workers) stays alive; Cmd+Q still quits.
     win.on("close", (event) => {
@@ -191,6 +288,13 @@ export function createGmailWindow(windowStatePath: string, isQuitting: () => boo
 
     win.on("resize", () => {
         saveWindowState(win);
+        const { width: w, height: h } = win.getBounds();
+        if (!gmailView.webContents.isDestroyed()) {
+            gmailView.setBounds({ x: 0, y: yOffset, width: w, height: h - yOffset });
+        }
+        if (_titlebarView && !_titlebarView.webContents.isDestroyed()) {
+            _titlebarView.setBounds({ x: 0, y: 0, width: w, height: TITLEBAR_HEIGHT });
+        }
     });
     win.on("move", () => {
         saveWindowState(win);

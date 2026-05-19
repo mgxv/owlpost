@@ -16,7 +16,6 @@
             }
 
             let lastCount = -1;
-            let lastEmail = "";
             let warnedFormat = false;
 
             function readCount(): number | null {
@@ -35,22 +34,11 @@
                 return 0;
             }
 
-            function readEmail(): string | null {
-                const title = document.title || "";
-                const m = title.match(EMAIL_RE);
-                return m ? m[0] : null;
-            }
-
             function tick(): void {
                 const count = readCount();
                 if (count !== null && count !== lastCount) {
                     lastCount = count;
                     owl.emit("unread-count", count);
-                }
-                const email = readEmail();
-                if (email && email !== lastEmail) {
-                    lastEmail = email;
-                    owl.emit("account-email", email);
                 }
             }
 

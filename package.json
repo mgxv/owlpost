@@ -32,7 +32,7 @@
         "build": "npm run build:renderer && npm run build:main && npm run build:preload && npm run build:injected",
         "build:renderer": "vite build",
         "build:main": "tsc -p tsconfig.node.json",
-        "build:preload": "esbuild electron/preload/prefs.ts electron/preload/gmail.ts --bundle --platform=node --target=es2022 --external:electron --outdir=dist-electron/preload",
+        "build:preload": "esbuild electron/preload/prefs.ts electron/preload/gmail.ts electron/preload/titlebar.ts --bundle --platform=node --target=es2022 --external:electron --outdir=dist-electron/preload",
         "build:injected": "tsc -p tsconfig.injected.json",
         "clean": "rm -rf dist dist-electron dist-injected release",
         "clean:all": "rm -rf dist dist-electron dist-injected release node_modules package-lock.json && npm cache clean --force",
@@ -47,6 +47,7 @@
     },
     "dependencies": {
         "@heroicons/react": "^2.2.0",
+        "electron-findbar": "^3.7.2",
         "electron-log": "^5.4.4",
         "electron-store": "^11.0.2",
         "electron-updater": "^6.8.5",
