@@ -4,7 +4,7 @@ import path from "path";
 import Findbar from "electron-findbar";
 import { logger } from "../core/logger";
 import { getPref } from "../core/store";
-import { PRELOAD_GMAIL, safeOpenExternal, GMAIL_ALLOWED_HOSTS } from "./shared";
+import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS } from "./shared";
 
 const TITLEBAR_HEIGHT = 32;
 const PRELOAD_TITLEBAR = path.join(__dirname, "../preload/titlebar.js");
@@ -106,13 +106,6 @@ export function reloadGmail(): void {
     if (_gmailView && !_gmailView.webContents.isDestroyed()) _gmailView.webContents.reload();
 }
 
-export function executeInGmail(js: string): void {
-    if (!_gmailView || _gmailView.webContents.isDestroyed()) return;
-    _gmailView.webContents.executeJavaScript(js).catch((e: unknown) => {
-        logger.warn("[gmail] executeJavaScript failed:", e);
-    });
-}
-
 export function zoomIn(): void {
     if (_gmailWindow && !_gmailWindow.isDestroyed()) applyZoom(_currentZoom + ZOOM_STEP);
 }
@@ -158,7 +151,7 @@ function attachNavigationHandlers(wc: WebContents): void {
             if (GMAIL_ALLOWED_HOSTS.has(host)) {
                 void wc.loadURL(url);
             } else {
-                safeOpenExternal(url);
+                openExternal(url);
             }
         } catch (e) {
             logger.debug("[gmail] setWindowOpenHandler — malformed URL:", e);
@@ -171,7 +164,7 @@ function attachNavigationHandlers(wc: WebContents): void {
             const host = new URL(url).hostname;
             if (!GMAIL_ALLOWED_HOSTS.has(host)) {
                 event.preventDefault();
-                safeOpenExternal(url);
+                openExternal(url);
             }
         } catch {
             event.preventDefault();

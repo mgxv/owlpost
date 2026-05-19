@@ -32,19 +32,14 @@ export default function App() {
         setNotificationsEnabled,
     } = usePreferences();
 
-    // Apply native dark/light class based on the theme pref
     useEffect(() => {
         const html = document.documentElement;
         const apply = (isDark: boolean) => {
             html.classList.toggle("dark", isDark);
             html.style.colorScheme = isDark ? "dark" : "light";
         };
-        if (systemTheme === "light") {
-            apply(false);
-            return;
-        }
-        if (systemTheme === "dark") {
-            apply(true);
+        if (systemTheme !== "system") {
+            apply(systemTheme === "dark");
             return;
         }
         const media = window.matchMedia("(prefers-color-scheme: dark)");

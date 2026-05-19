@@ -4,9 +4,8 @@ type UpdateState =
     | { status: "idle" }
     | { status: "checking" }
     | { status: "up-to-date" }
-    | { status: "available" }
-    | { status: "installing" }
     | { status: "ready"; version: string }
+    | { status: "installing" }
     | { status: "error"; message: string };
 
 export default function UpdateChecker() {
@@ -44,20 +43,9 @@ export default function UpdateChecker() {
         }
     }
 
-    async function installUpdate() {
-        setState({ status: "installing" });
-        try {
-            await window.owlpost.update.install();
-        } catch (e) {
-            setState({ status: "error", message: String(e) });
-        }
-    }
-
-    const busy = state.status === "checking" || state.status === "installing";
-
     const message =
         state.status === "ready"
-            ? `v${state.version} installed — restart to apply`
+            ? `v${state.version} downloaded — restart to install`
             : state.status === "up-to-date"
               ? "You're on the latest version."
               : state.status === "error"
@@ -81,24 +69,22 @@ export default function UpdateChecker() {
                 type="button"
                 onClick={() => {
                     if (state.status === "ready") {
-                        void window.owlpost.app.relaunch();
-                    } else if (state.status === "available") {
-                        void installUpdate();
+                        setState({ status: "installing" });
+                        void window.owlpost.update.install();
                     } else {
                         void checkForUpdates();
                     }
                 }}
-                disabled={busy}
+                disabled={state.status === "checking" || state.status === "installing"}
                 className="rounded border border-neutral-300 bg-white px-2 py-1 text-[13px] hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
             >
-                {state.status === "checking" && "Checking…"}
-                {state.status === "installing" && "Installing…"}
-                {state.status === "ready" && "Restart now"}
-                {(state.status === "idle" ||
-                    state.status === "up-to-date" ||
-                    state.status === "available" ||
-                    state.status === "error") &&
-                    "Check for updates"}
+                {state.status === "checking"
+                    ? "Checking…"
+                    : state.status === "installing"
+                      ? "Restarting…"
+                      : state.status === "ready"
+                        ? "Restart to update"
+                        : "Check for updates"}
             </button>
         </div>
     );
