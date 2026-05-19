@@ -1,12 +1,24 @@
-import { app, BrowserWindow, WebContentsView, type WebContents } from "electron";
+import { app, BrowserWindow, WebContentsView, nativeTheme, type WebContents } from "electron";
 import { readFileSync, writeFileSync } from "fs";
 import path from "path";
+import Findbar from "electron-findbar";
 import { logger } from "../core/logger";
 import { getPref } from "../core/store";
 import { PRELOAD_GMAIL, safeOpenExternal, GMAIL_ALLOWED_HOSTS } from "./shared";
 
 const TITLEBAR_HEIGHT = 32;
 const PRELOAD_TITLEBAR = path.join(__dirname, "../preload/titlebar.js");
+
+Findbar.setDefaultTheme("system");
+Findbar.setDefaultBoundsHandler((parent, bar) => ({
+    x: parent.x + parent.width - bar.width - 20,
+    y: parent.y + (process.platform === "darwin" ? TITLEBAR_HEIGHT : 0) + 8,
+    width: bar.width,
+    height: bar.height,
+}));
+Findbar.setDefaultWindowHandler((win) => {
+    win.setBackgroundColor(nativeTheme.shouldUseDarkColors ? "#1f1f1f" : "#ffffff");
+});
 
 function loadTitlebar(wc: WebContents): void {
     if (app.isPackaged) {
@@ -75,6 +87,12 @@ export function getGmailWebContents(): WebContents | null {
 
 export function getCurrentZoom(): number {
     return _currentZoom;
+}
+
+export function openFindbar(): void {
+    const wc = getGmailWebContents();
+    if (!wc) return;
+    Findbar.from(wc).open();
 }
 
 export function showGmailWindow(): void {

@@ -12,15 +12,15 @@ import { registerSystemIpc } from "./ipc/system";
 import {
     createGmailWindow,
     showGmailWindow,
+    openFindbar,
     reloadGmail,
-    executeInGmail,
     zoomIn,
     zoomOut,
     zoomReset,
 } from "./windows/gmail";
 import { openCompose } from "./windows/compose";
 import { initPrefsWindow, togglePrefs, getPrefsWindow } from "./windows/prefs";
-import { buildMenu, FOCUS_SEARCH_JS } from "./services/menu";
+import { buildMenu } from "./services/menu";
 import { IPC_UPDATE_READY } from "./core/constants";
 
 if (process.env.SENTRY_DSN) {
@@ -109,9 +109,7 @@ void app.whenReady().then(async () => {
         },
         onCompose: openCompose,
         onReload: reloadGmail,
-        onFocusSearch: () => {
-            executeInGmail(FOCUS_SEARCH_JS);
-        },
+        onFind: openFindbar,
         onZoomIn: zoomIn,
         onZoomOut: zoomOut,
         onZoomReset: zoomReset,

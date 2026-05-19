@@ -2,7 +2,7 @@ import { ipcMain, Notification } from "electron";
 import { IPC_FROM_GMAIL } from "../core/constants";
 import { getPref } from "../core/store";
 import { updateBadge } from "../services/badge";
-import { getGmailWebContents } from "../windows/gmail";
+import { getGmailWebContents, openFindbar } from "../windows/gmail";
 import { showPrefs } from "../windows/prefs";
 import { logger } from "../core/logger";
 
@@ -16,6 +16,7 @@ export function registerGmailIpc(): void {
         if (wc?.navigationHistory.canGoForward()) wc.navigationHistory.goForward();
     });
     ipcMain.on("tb:open-prefs", showPrefs);
+    ipcMain.on("tb:open-find", openFindbar);
 
     ipcMain.on(IPC_FROM_GMAIL, (_event, msg: unknown) => {
         if (typeof msg !== "object" || msg === null) return;

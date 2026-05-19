@@ -4,25 +4,11 @@ interface MenuCallbacks {
     onPreferences: () => void;
     onCompose: () => void;
     onReload: () => void;
-    onFocusSearch: () => void;
+    onFind: () => void;
     onZoomIn: () => void;
     onZoomOut: () => void;
     onZoomReset: () => void;
 }
-
-// Tries known Gmail search-bar selectors in order; Gmail's DOM structure varies across versions.
-export const FOCUS_SEARCH_JS = `(() => {
-  const SELECTORS = [
-    'input[aria-label*="Search" i]',
-    'input[name="q"]',
-    'header[role="search"] input',
-  ];
-  for (const sel of SELECTORS) {
-    const el = document.querySelector(sel);
-    if (el) { el.focus(); if (el.select) el.select(); return; }
-  }
-  if (window.__owlpost__) window.__owlpost__.emit("menu-action-failed", "focus_search");
-})();`;
 
 export function buildMenu(cb: MenuCallbacks): Menu {
     const template: MenuItemConstructorOptions[] = [
@@ -78,7 +64,7 @@ export function buildMenu(cb: MenuCallbacks): Menu {
                 {
                     label: "Find",
                     accelerator: "CmdOrCtrl+F",
-                    click: cb.onFocusSearch,
+                    click: cb.onFind,
                 },
                 { type: "separator" },
                 {

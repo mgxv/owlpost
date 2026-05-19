@@ -12,6 +12,9 @@ contextBridge.exposeInMainWorld("tb", {
     openPrefs(): void {
         ipcRenderer.send("tb:open-prefs");
     },
+    openFind(): void {
+        ipcRenderer.send("tb:open-find");
+    },
     onUpdate(fn: (s: NavState) => void): void {
         ipcRenderer.on("tb:update", (_e, s) => {
             fn(s as NavState);
