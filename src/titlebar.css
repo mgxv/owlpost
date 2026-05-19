@@ -1,13 +1,10 @@
 @import "tailwindcss";
-
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (@media (prefers-color-scheme: dark));
 
 .drag {
     -webkit-app-region: drag;
     app-region: drag;
-    user-select: none;
 }
-
 .no-drag {
     -webkit-app-region: no-drag;
     app-region: no-drag;

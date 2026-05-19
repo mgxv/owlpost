@@ -16,6 +16,7 @@ const TABS: { id: TabId; label: string; Icon: typeof Cog6ToothIcon }[] = [
 
 export default function App() {
     const [activeTab, setActiveTab] = useState<TabId>("general");
+
     const {
         systemTheme,
         setSystemTheme,
@@ -57,36 +58,32 @@ export default function App() {
         };
     }, [systemTheme]);
 
-    // Update window title to match active tab
-    useEffect(() => {
-        const label = TABS.find((t) => t.id === activeTab)?.label ?? "Preferences";
-        document.title = label;
-    }, [activeTab]);
-
     return (
         <div className="flex h-screen flex-col bg-neutral-100 font-[system-ui] text-[13px] text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100">
-            <header className="border-b border-neutral-200/80 bg-neutral-100 dark:border-neutral-700/80 dark:bg-neutral-900">
-                <nav className="flex justify-center gap-1 px-4 pt-3 pb-2">
-                    {TABS.map(({ id, label, Icon }) => {
-                        const active = activeTab === id;
-                        return (
-                            <button
-                                key={id}
-                                type="button"
-                                className={`flex w-22 flex-col items-center gap-1 rounded-md px-2 py-1.5 text-neutral-700 dark:text-neutral-300 ${
-                                    active
-                                        ? "bg-neutral-200/60 dark:bg-neutral-700/60"
-                                        : "hover:bg-neutral-200/40 dark:hover:bg-neutral-700/40"
-                                }`}
-                                onClick={() => {
-                                    setActiveTab(id);
-                                }}
-                            >
-                                <Icon className="h-6 w-6" />
-                                <span className="text-[11px] leading-none">{label}</span>
-                            </button>
-                        );
-                    })}
+            <header className="drag relative border-b border-neutral-200/80 bg-neutral-100 dark:border-neutral-700/80 dark:bg-neutral-900">
+                <div className="relative flex h-[38px] items-center justify-center">
+                    <p className="pointer-events-none text-[12px] font-medium text-neutral-600 dark:text-neutral-300">
+                        {TABS.find((t) => t.id === activeTab)?.label ?? "Preferences"}
+                    </p>
+                </div>
+                <nav className="no-drag flex justify-center gap-1 px-4 pb-2 pt-1">
+                    {TABS.map(({ id, label, Icon }) => (
+                        <button
+                            key={id}
+                            type="button"
+                            className={`no-drag flex w-22 flex-col items-center gap-1 rounded-md px-2 py-1.5 text-neutral-700 dark:text-neutral-300 ${
+                                activeTab === id
+                                    ? "bg-neutral-200/60 dark:bg-neutral-700/60"
+                                    : "hover:bg-neutral-200/40 dark:hover:bg-neutral-700/40"
+                            }`}
+                            onClick={() => {
+                                setActiveTab(id);
+                            }}
+                        >
+                            <Icon className="h-6 w-6" />
+                            <span className="text-[11px] leading-none">{label}</span>
+                        </button>
+                    ))}
                 </nav>
             </header>
 

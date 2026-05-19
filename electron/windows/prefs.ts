@@ -25,13 +25,14 @@ export function initPrefsWindow(isQuitting: () => boolean): void {
 
     const win = new BrowserWindow({
         width: 500,
-        height: 450,
+        height: 480,
         resizable: false,
         minimizable: false,
         maximizable: false,
         show: false,
         title: "Preferences",
-        titleBarStyle: "default",
+        titleBarStyle: "hiddenInset",
+        trafficLightPosition: { x: 12, y: 13 },
         backgroundColor: resolveBackgroundColor(),
         webPreferences: {
             preload: PRELOAD_PREFS,
@@ -60,6 +61,21 @@ export function initPrefsWindow(isQuitting: () => boolean): void {
     });
 
     _prefsWindow = win;
+}
+
+export function showPrefs(): void {
+    const win = _prefsWindow;
+    if (!win || win.isDestroyed()) return;
+    const doShow = (): void => {
+        if (win.isMinimized()) win.restore();
+        win.show();
+        win.focus();
+    };
+    if (_ready) {
+        doShow();
+    } else {
+        win.once("ready-to-show", doShow);
+    }
 }
 
 export function togglePrefs(isQuitting: () => boolean): void {

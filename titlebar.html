@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+    </head>
+    <body
+        class="drag relative m-0 flex h-screen select-none items-center overflow-hidden bg-neutral-100 p-0 font-sans dark:bg-neutral-900"
+    >
+        <div
+            class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-neutral-200/80 dark:bg-neutral-700/80"
+        ></div>
+        <div class="flex shrink-0 items-center gap-0.5 pl-24">
+            <button
+                id="back"
+                class="no-drag flex size-6 shrink-0 cursor-pointer items-center justify-center rounded border-0 bg-transparent text-neutral-500 hover:bg-neutral-200/60 disabled:cursor-default disabled:opacity-30 disabled:pointer-events-none dark:text-neutral-400 dark:hover:bg-neutral-700/60"
+                disabled
+                aria-label="Go back"
+            ></button>
+            <button
+                id="fwd"
+                class="no-drag flex size-6 shrink-0 cursor-pointer items-center justify-center rounded border-0 bg-transparent text-neutral-500 hover:bg-neutral-200/60 disabled:cursor-default disabled:opacity-30 disabled:pointer-events-none dark:text-neutral-400 dark:hover:bg-neutral-700/60"
+                disabled
+                aria-label="Go forward"
+            ></button>
+        </div>
+        <p
+            id="title"
+            class="pointer-events-none absolute inset-x-0 truncate px-40 text-center text-[12px] font-medium text-neutral-600 dark:text-neutral-300"
+        >
+            Gmail
+        </p>
+        <div class="ml-auto flex shrink-0 items-center pr-4">
+            <button
+                id="prefs"
+                class="no-drag flex size-6 shrink-0 cursor-pointer items-center justify-center rounded border-0 bg-transparent text-neutral-500 hover:bg-neutral-200/60 dark:text-neutral-400 dark:hover:bg-neutral-700/60"
+                aria-label="Open preferences"
+            ></button>
+        </div>
+        <script type="module" src="/src/titlebar.ts"></script>
+    </body>
+</html>
