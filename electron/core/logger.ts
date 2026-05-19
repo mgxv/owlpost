@@ -1,7 +1,7 @@
 import log from "electron-log";
 import { app } from "electron";
 
-const isDev = !app.isPackaged;
+export const isDev = !app.isPackaged;
 
 log.transports.file.level = "info";
 log.transports.console.level = isDev ? "debug" : false;

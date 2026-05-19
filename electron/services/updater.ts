@@ -1,6 +1,5 @@
 import { autoUpdater, type UpdateInfo } from "electron-updater";
-import { app } from "electron";
-import { logger } from "../core/logger";
+import { isDev, logger } from "../core/logger";
 
 let pendingVersion: string | null = null;
 
@@ -8,11 +7,15 @@ export function getPendingVersion(): string | null {
     return pendingVersion;
 }
 
-export function checkForUpdates(onReady: (version: string) => void): void {
-    if (!app.isPackaged) return;
+export function checkForUpdates(onReady: (version: string) => void, onDownloading: (version: string) => void): void {
+    if (isDev) return;
 
     autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = false;
+
+    autoUpdater.on("update-available", (info: UpdateInfo) => {
+        onDownloading(info.version);
+    });
 
     autoUpdater.on("update-downloaded", (info: UpdateInfo) => {
         pendingVersion = info.version;

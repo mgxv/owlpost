@@ -21,7 +21,7 @@ import {
 import { openCompose } from "./windows/compose";
 import { initPrefsWindow, togglePrefs, getPrefsWindow } from "./windows/prefs";
 import { buildMenu } from "./services/menu";
-import { IPC_UPDATE_READY } from "./core/constants";
+import { IPC_UPDATE_DOWNLOADING, IPC_UPDATE_READY } from "./core/constants";
 
 if (process.env.SENTRY_DSN) {
     crashReporter.start({ submitURL: process.env.SENTRY_DSN });
@@ -114,12 +114,19 @@ void app.whenReady().then(async () => {
     });
     Menu.setApplicationMenu(menu);
 
+    const sendToPrefs = (channel: string, ...args: unknown[]): void => {
+        const pw = getPrefsWindow();
+        if (pw && !pw.isDestroyed()) pw.webContents.send(channel, ...args);
+    };
+
     setTimeout(() => {
-        checkForUpdates((version) => {
-            const pw = getPrefsWindow();
-            if (pw && !pw.isDestroyed()) {
-                pw.webContents.send(IPC_UPDATE_READY, version);
-            }
-        });
+        checkForUpdates(
+            (version) => {
+                sendToPrefs(IPC_UPDATE_READY, version);
+            },
+            (version) => {
+                sendToPrefs(IPC_UPDATE_DOWNLOADING, version);
+            },
+        );
     }, 20_000);
 });

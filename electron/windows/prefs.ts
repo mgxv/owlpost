@@ -1,6 +1,7 @@
-import { app, BrowserWindow, nativeTheme } from "electron";
+import { BrowserWindow, nativeTheme } from "electron";
 import path from "path";
 import { getPref } from "../core/store";
+import { isDev } from "../core/logger";
 
 const PRELOAD_PREFS = path.join(__dirname, "../preload/prefs.js");
 // Match App.tsx: bg-neutral-900 / bg-neutral-100
@@ -47,7 +48,7 @@ export function initPrefsWindow(isQuitting: () => boolean): void {
         _ready = true;
     });
 
-    if (!app.isPackaged) {
+    if (isDev) {
         void win.loadURL("http://localhost:3000");
     } else {
         void win.loadFile(path.join(__dirname, "../../dist/index.html"));

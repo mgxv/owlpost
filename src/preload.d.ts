@@ -24,6 +24,7 @@ interface OwlpostAPI {
         check: () => Promise<void>;
         install: () => Promise<void>;
         pendingVersion: () => Promise<string | null>;
+        onDownloading: (handler: (version: string) => void) => UnsubFn;
         onReady: (handler: (version: string) => void) => UnsubFn;
     };
     app: {
