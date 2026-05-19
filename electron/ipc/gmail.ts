@@ -9,15 +9,13 @@ import { logger } from "../core/logger";
 export function registerGmailIpc(): void {
     ipcMain.on("tb:go-back", () => {
         const wc = getGmailWebContents();
-        if (wc && wc.navigationHistory.canGoBack()) wc.navigationHistory.goBack();
+        if (wc?.navigationHistory.canGoBack()) wc.navigationHistory.goBack();
     });
     ipcMain.on("tb:go-forward", () => {
         const wc = getGmailWebContents();
-        if (wc && wc.navigationHistory.canGoForward()) wc.navigationHistory.goForward();
+        if (wc?.navigationHistory.canGoForward()) wc.navigationHistory.goForward();
     });
-    ipcMain.on("tb:open-prefs", () => {
-        showPrefs();
-    });
+    ipcMain.on("tb:open-prefs", showPrefs);
 
     ipcMain.on(IPC_FROM_GMAIL, (_event, msg: unknown) => {
         if (typeof msg !== "object" || msg === null) return;

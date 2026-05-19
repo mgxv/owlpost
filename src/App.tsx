@@ -61,7 +61,7 @@ export default function App() {
     return (
         <div className="flex h-screen flex-col bg-neutral-100 font-[system-ui] text-[13px] text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100">
             <header className="drag relative border-b border-neutral-200/80 bg-neutral-100 dark:border-neutral-700/80 dark:bg-neutral-900">
-                <div className="relative flex h-[38px] items-center justify-center">
+                <div className="relative flex h-9.5 items-center justify-center">
                     <p className="pointer-events-none text-[12px] font-medium text-neutral-600 dark:text-neutral-300">
                         {TABS.find((t) => t.id === activeTab)?.label ?? "Preferences"}
                     </p>

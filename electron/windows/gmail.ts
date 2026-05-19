@@ -37,13 +37,6 @@ async function injectGmailScripts(wc: WebContents): Promise<void> {
     }
 }
 
-const EMAIL_RE = /[\w.+-]+@[\w.-]+\.[a-z]{2,}/i;
-
-function extractGmailTitle(rawTitle: string): string {
-    const m = rawTitle.match(EMAIL_RE);
-    return m?.[0] ?? "Gmail";
-}
-
 interface WindowState {
     x?: number;
     y?: number;
@@ -63,10 +56,11 @@ let _windowStatePath = "";
 
 function pushTitlebarState(wc: WebContents): void {
     if (!_titlebarView || _titlebarView.webContents.isDestroyed()) return;
+    const title = wc.getTitle().match(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/i)?.[0] ?? "Gmail";
     _titlebarView.webContents.send("tb:update", {
         canGoBack: wc.navigationHistory.canGoBack(),
         canGoForward: wc.navigationHistory.canGoForward(),
-        title: extractGmailTitle(wc.getTitle()),
+        title,
     });
 }
 

@@ -2,6 +2,18 @@
 <html>
     <head>
         <meta charset="utf-8" />
+        <style>
+            @import "tailwindcss";
+            @custom-variant dark (@media (prefers-color-scheme: dark));
+            .drag {
+                -webkit-app-region: drag;
+                app-region: drag;
+            }
+            .no-drag {
+                -webkit-app-region: no-drag;
+                app-region: no-drag;
+            }
+        </style>
     </head>
     <body
         class="drag relative m-0 flex h-screen select-none items-center overflow-hidden bg-neutral-100 p-0 font-sans dark:bg-neutral-900"
