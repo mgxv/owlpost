@@ -11,7 +11,8 @@ import {
 import { getPendingVersion, installUpdate } from "../services/updater";
 import { getPrefsWindow } from "../windows/prefs";
 import { DEFAULTS, setPref, type Prefs } from "../core/store";
-import { isDev, logger } from "../core/logger";
+import { isDev } from "../core/env";
+import { logger } from "../core/logger";
 
 export function registerSystemIpc(markQuitting: () => void): void {
     ipcMain.handle(IPC_UPDATE_CHECK, async () => {

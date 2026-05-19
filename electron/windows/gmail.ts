@@ -2,7 +2,8 @@ import { app, BrowserWindow, WebContentsView, nativeTheme, type WebContents } fr
 import { readFileSync, writeFileSync } from "fs";
 import path from "path";
 import Findbar from "electron-findbar";
-import { isDev, logger } from "../core/logger";
+import { isDev } from "../core/env";
+import { logger } from "../core/logger";
 import { getPref } from "../core/store";
 import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS } from "./shared";
 

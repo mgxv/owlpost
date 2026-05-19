@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { isDev } from "../env";
 
 interface Props {
     crashReporting: boolean;
@@ -59,14 +60,16 @@ export default function AdvancedTab({ crashReporting, setCrashReporting }: Props
                 <button
                     type="button"
                     onClick={() => void handleReset()}
-                    className="rounded border border-red-300 bg-white px-2 py-1 text-[13px] text-red-600 hover:bg-red-50 dark:border-red-800 dark:bg-neutral-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                    disabled={isDev}
+                    className="rounded border border-red-300 bg-white px-2 py-1 text-[13px] text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:bg-neutral-800 dark:text-red-400 dark:hover:bg-red-900/20"
                 >
                     Reset app
                 </button>
                 <button
                     type="button"
                     onClick={() => void handleRelaunch()}
-                    className="rounded border border-neutral-300 bg-white px-2 py-1 text-[13px] hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+                    disabled={isDev}
+                    className="rounded border border-neutral-300 bg-white px-2 py-1 text-[13px] hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
                 >
                     Restart now
                 </button>

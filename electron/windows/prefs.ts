@@ -1,7 +1,7 @@
 import { BrowserWindow, nativeTheme } from "electron";
 import path from "path";
 import { getPref } from "../core/store";
-import { isDev } from "../core/logger";
+import { isDev } from "../core/env";
 
 const PRELOAD_PREFS = path.join(__dirname, "../preload/prefs.js");
 // Match App.tsx: bg-neutral-900 / bg-neutral-100

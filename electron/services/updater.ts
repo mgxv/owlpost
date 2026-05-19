@@ -1,5 +1,6 @@
 import { autoUpdater, type UpdateInfo } from "electron-updater";
-import { isDev, logger } from "../core/logger";
+import { isDev } from "../core/env";
+import { logger } from "../core/logger";
 
 let pendingVersion: string | null = null;
 
