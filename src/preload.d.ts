@@ -36,7 +36,6 @@ declare global {
     interface Window {
         owlpost: OwlpostAPI;
         __owlpost__: {
-            EMAIL_RE: RegExp;
             onReady: (fn: () => void) => void;
             emit: (name: string, payload: unknown) => void;
         };

@@ -6,7 +6,7 @@
 
         owl.onReady(() => {
             function OwlpostNotification(this: Notification, title: string, options?: NotificationOptions) {
-                options = options || {};
+                options ??= {};
                 window.__owlpost__?.emit("notification", {
                     title,
                     body: options.body ?? "",

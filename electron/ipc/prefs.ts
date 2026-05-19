@@ -20,7 +20,7 @@ function isValidPrefValue(key: keyof Prefs, value: unknown): boolean {
         case "systemTheme":
             return value === "light" || value === "dark" || value === "system";
         case "defaultZoom":
-            return typeof value === "number" && Number.isFinite(value) && value >= 50 && value <= 200;
+            return typeof value === "number" && Number.isFinite(value) && value >= 50 && value <= 150;
         case "showDockBadge":
         case "launchAtStartup":
         case "crashReporting":

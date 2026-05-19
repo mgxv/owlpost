@@ -39,17 +39,6 @@ mac:
 dmg:
     title: "${productName} ${version}"
 
-win:
-    icon: build-resources/icon.ico
-    target:
-        - target: nsis
-
-linux:
-    icon: build-resources/icon.png
-    category: Network
-    target:
-        - target: AppImage
-
 publish:
     provider: github
     owner: mgxv

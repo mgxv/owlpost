@@ -46,9 +46,7 @@ const markQuitting = (): void => {
     isQuitting = true;
 };
 
-app.on("before-quit", () => {
-    isQuitting = true;
-});
+app.on("before-quit", markQuitting);
 
 app.on("window-all-closed", () => {
     if (process.platform !== "darwin") app.quit();
@@ -88,8 +86,8 @@ void app.whenReady().then(async () => {
 
     const ua = session.defaultSession
         .getUserAgent()
-        .replace(/Electron\/[\d.]+ ?/, "")
-        .replace(/owlpost\/[\d.]+ ?/, "");
+        .replace(/\s*(Electron|owlpost)\/[\d.]+/g, "")
+        .trim();
     session.defaultSession.setUserAgent(ua);
     app.setAsDefaultProtocolClient("mailto");
 

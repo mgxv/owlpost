@@ -134,7 +134,6 @@ All windows use `contextIsolation: true`, `sandbox: true`, and `nodeIntegration:
 - **Titlebar view** — exposes `window.tb` via `preload/titlebar.ts`. Provides back/forward navigation, find-in-page, and preferences open over IPC.
 - **Preferences window** — exposes `window.owlpost` via `preload/prefs.ts`. A typed API for the React renderer covering preferences, updates, and app lifecycle.
 - **Preloads are bundled with esbuild** (`--bundle --external:electron`) so imports resolve at build time rather than at runtime inside the sandbox.
-- `safeOpenExternal` in `windows/shared.ts` whitelists only `https:`, `http:`, and `mailto:` before calling `shell.openExternal` — all other protocols are silently dropped.
 - `isValidPrefValue` in `ipc/prefs.ts` type-checks and range-checks every preference write to guard against a compromised renderer sending arbitrary values.
 
 ### IPC flow
