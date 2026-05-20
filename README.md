@@ -1,30 +1,44 @@
+<div align="center">
+  <img src="./build-resources/icon.png"
+       width="150"
+       height="150">
+
 # Owlpost
+
+</div>
 
 A minimal macOS app that wraps Gmail in a native window, built with Electron 42 and React 19. Owlpost doesn't reimplement Gmail — it embeds the real Gmail UI inside an Electron BrowserWindow and layers on the OS integrations a browser tab can't provide: dock badge with live unread count, system notifications, mailto: link handling, zoom control, and launch at login. Because Electron bundles Chromium rather than using the system WebView, Gmail runs exactly as it does in Chrome with full compatibility.
 
-## Download
+## Install
 
-Download the latest release from the [Releases page](https://github.com/mgxv/owlpost/releases). Open the `.dmg`, drag Owlpost to Applications, and sign in with your Google account.
+Download the `.dmg` for your Mac from the [latest release](https://github.com/mgxv/owlpost/releases/latest):
+
+- **Apple Silicon (M1 and later)** — `Owlpost_*_aarch64.dmg`
+- **Intel** — `Owlpost_*_x64.dmg`
+
+Drag **Owlpost** into `/Applications`.
+
+On first launch macOS will block the app because it isn't notarized with an Apple Developer account:
+
+1. Double-click **Owlpost** — macOS shows an alert saying it cannot be opened. Click **Done**.
+2. Open **System Settings → Privacy & Security** and scroll to the Security section.
+3. Click **Open Anyway** next to the Owlpost message.
+4. Click **Open Anyway** in the confirmation dialog.
+5. Enter your password or confirm with Touch ID if prompted.
+
+Alternatively, strip the quarantine flag directly from Terminal:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/Owlpost.app
+```
+
+On first launch macOS may also show a keychain prompt:
+
+> **"Owlpost" wants access to key "Owlpost Safe Storage" in your keychain.**
+
+Click **Always Allow**. This is Chromium (bundled inside Electron) storing an encryption key it uses to protect locally saved cookies and session data — it is not the app reading your passwords or other keychain items. Choosing **Allow** instead of **Always Allow** will cause the prompt to reappear on every launch.
 
 > macOS 13 or later required.
-
----
-
-## For developers
-
-Owlpost is built with Electron 42, React 19, Vite 8, Tailwind v4, and TypeScript (strict).
-
-### Stack
-
-| Layer        | Technology                      |
-| ------------ | ------------------------------- |
-| Shell        | Electron 42                     |
-| Renderer     | React 19 + Vite 8 + Tailwind v4 |
-| Language     | TypeScript (strict)             |
-| Preferences  | electron-store 11               |
-| Updates      | electron-updater                |
-| Logging      | electron-log 5                  |
-| Find-in-page | electron-findbar                |
 
 ---
 
@@ -40,6 +54,7 @@ owlpost/
 │   │
 │   ├── core/                         Foundational modules imported by everything
 │   │   ├── constants.ts              All IPC channel names and URL constants
+│   │   ├── env.ts                    isDev flag — true when app.isPackaged is false
 │   │   ├── logger.ts                 electron-log wrapper (file + conditional console output)
 │   │   └── store.ts                  electron-store wrapper — typed preference persistence
 │   │
@@ -74,6 +89,7 @@ owlpost/
 ├── src/                              Renderer source (compiled → dist/ by Vite)
 │   ├── main.tsx                      React entry point
 │   ├── titlebar.ts                   Vanilla TS entry for the custom Gmail titlebar
+│   ├── env.ts                        isDev flag — import.meta.env.DEV
 │   ├── App.tsx                       Root component — preferences tab shell
 │   ├── ErrorBoundary.tsx             Catches render errors and shows a recovery UI
 │   ├── usePreferences.ts             Hook — loads prefs from main process, exposes typed setters
@@ -198,6 +214,22 @@ npm run check        # lint + format check together
 
 ---
 
+## Troubleshooting
+
+Production logs are written to:
+
+```
+~/Library/Logs/Owlpost/main.log
+```
+
+Stream them in real time while reproducing an issue:
+
+```bash
+tail -f ~/Library/Logs/Owlpost/main.log
+```
+
+---
+
 ## Logging
 
-In development, debug-level output goes to the console. In production, info-level output is written to the platform log directory (`app.getPath("logs")`); console output is suppressed. Import `logger` from `electron/core/logger.ts` — do not use `console.log` in main-process code.
+In development, debug-level output goes to the console. In production, info-level output is written to `~/Library/Logs/Owlpost/main.log`; console output is suppressed. Import `logger` from `electron/core/logger.ts` — do not use `console.log` in main-process code.
