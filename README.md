@@ -38,6 +38,8 @@ On first launch macOS may also show a keychain prompt:
 
 Click **Always Allow**. This is Chromium (bundled inside Electron) storing an encryption key it uses to protect locally saved cookies and session data — it is not the app reading your passwords or other keychain items. Choosing **Allow** instead of **Always Allow** will cause the prompt to reappear on every launch.
 
+> **Note:** Because Owlpost is not code-signed with an Apple Developer certificate, the keychain prompt will reappear after each update. This is a macOS security restriction — "Always Allow" is tied to the binary hash, which changes with every new version.
+
 > macOS 13 or later required.
 
 ---
