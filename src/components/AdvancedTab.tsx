@@ -8,6 +8,7 @@ interface Props {
 
 export default function AdvancedTab({ crashReporting, setCrashReporting }: Props) {
     const [crashReportingAvailable, setCrashReportingAvailable] = useState(true);
+    const [pendingUpdate, setPendingUpdate] = useState(false);
 
     useEffect(() => {
         window.owlpost
@@ -16,6 +17,18 @@ export default function AdvancedTab({ crashReporting, setCrashReporting }: Props
             .catch(() => {
                 setCrashReportingAvailable(false);
             });
+
+        window.owlpost.update
+            .pendingVersion()
+            .then((v) => {
+                setPendingUpdate(!!v);
+            })
+            .catch(() => undefined);
+
+        const unsub = window.owlpost.update.onReady(() => {
+            setPendingUpdate(true);
+        });
+        return unsub;
     }, []);
 
     async function handleReset() {
@@ -28,9 +41,16 @@ export default function AdvancedTab({ crashReporting, setCrashReporting }: Props
     }
 
     async function handleRelaunch() {
-        const ok = window.confirm("Owlpost will restart immediately.");
+        const msg = pendingUpdate
+            ? "Owlpost will restart and install the pending update."
+            : "Owlpost will restart immediately.";
+        const ok = window.confirm(msg);
         if (!ok) return;
-        await window.owlpost.app.relaunch();
+        if (pendingUpdate) {
+            await window.owlpost.update.install();
+        } else {
+            await window.owlpost.app.relaunch();
+        }
     }
 
     return (
