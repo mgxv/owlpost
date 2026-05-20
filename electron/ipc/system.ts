@@ -20,6 +20,7 @@ export function registerSystemIpc(markQuitting: () => void): void {
     });
 
     ipcMain.handle(IPC_UPDATE_INSTALL, () => {
+        markQuitting();
         installUpdate();
     });
 
