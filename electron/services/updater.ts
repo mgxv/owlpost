@@ -32,6 +32,19 @@ export function checkForUpdates(onReady: (version: string) => void, onDownloadin
     });
 }
 
+export async function manualCheck(onDownloading: (version: string) => void): Promise<void> {
+    if (isDev) return;
+    autoUpdater.autoDownload = true;
+    autoUpdater.once("update-available", (info: UpdateInfo) => {
+        onDownloading(info.version);
+    });
+    try {
+        await autoUpdater.checkForUpdates();
+    } catch (err: unknown) {
+        logger.error("[updater] manual check:", err);
+    }
+}
+
 export function installUpdate(): void {
     autoUpdater.quitAndInstall(false, true);
 }
