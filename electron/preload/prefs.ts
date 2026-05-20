@@ -8,6 +8,7 @@ import {
     IPC_CRASH_REPORTING_AVAIL,
     IPC_NOTIF_PERMISSION_GET,
     IPC_UPDATE_CHECK,
+    IPC_UPDATE_DOWNLOADING,
     IPC_UPDATE_INSTALL,
     IPC_UPDATE_PENDING,
     IPC_UPDATE_READY,
@@ -44,6 +45,14 @@ contextBridge.exposeInMainWorld("owlpost", {
         check: () => ipcRenderer.invoke(IPC_UPDATE_CHECK),
         install: () => ipcRenderer.invoke(IPC_UPDATE_INSTALL),
         pendingVersion: () => ipcRenderer.invoke(IPC_UPDATE_PENDING),
+
+        onDownloading: (handler: (version: string) => void): UnsubFn => {
+            const listener = (_: IpcRendererEvent, version: string) => {
+                handler(version);
+            };
+            ipcRenderer.on(IPC_UPDATE_DOWNLOADING, listener);
+            return () => ipcRenderer.off(IPC_UPDATE_DOWNLOADING, listener);
+        },
 
         onReady: (handler: (version: string) => void): UnsubFn => {
             const listener = (_: IpcRendererEvent, version: string) => {

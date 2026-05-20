@@ -6,6 +6,7 @@ export const IPC_LAUNCH_AT_LOGIN_GET = "owlpost:launch-at-login:get";
 export const IPC_CRASH_REPORTING_AVAIL = "owlpost:crash-reporting-available";
 export const IPC_NOTIF_PERMISSION_GET = "owlpost:notification-permission:get";
 export const IPC_UPDATE_CHECK = "owlpost:update:check";
+export const IPC_UPDATE_DOWNLOADING = "owlpost:update:downloading";
 export const IPC_UPDATE_INSTALL = "owlpost:update:install";
 export const IPC_UPDATE_PENDING = "owlpost:update:pending-version";
 export const IPC_UPDATE_READY = "owlpost:update:ready";

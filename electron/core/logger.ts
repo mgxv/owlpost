@@ -1,7 +1,5 @@
 import log from "electron-log";
-import { app } from "electron";
-
-const isDev = !app.isPackaged;
+import { isDev } from "./env";
 
 log.transports.file.level = "info";
 log.transports.console.level = isDev ? "debug" : false;

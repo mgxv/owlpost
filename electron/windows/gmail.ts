@@ -2,9 +2,10 @@ import { app, BrowserWindow, WebContentsView, nativeTheme, type WebContents } fr
 import { readFileSync, writeFileSync } from "fs";
 import path from "path";
 import Findbar from "electron-findbar";
+import { isDev } from "../core/env";
 import { logger } from "../core/logger";
 import { getPref } from "../core/store";
-import { PRELOAD_GMAIL, safeOpenExternal, GMAIL_ALLOWED_HOSTS } from "./shared";
+import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS } from "./shared";
 
 const TITLEBAR_HEIGHT = 32;
 const PRELOAD_TITLEBAR = path.join(__dirname, "../preload/titlebar.js");
@@ -21,10 +22,10 @@ Findbar.setDefaultWindowHandler((win) => {
 });
 
 function loadTitlebar(wc: WebContents): void {
-    if (app.isPackaged) {
-        void wc.loadFile(path.join(__dirname, "../../dist/titlebar.html"));
-    } else {
+    if (isDev) {
         void wc.loadURL("http://localhost:3000/titlebar.html");
+    } else {
+        void wc.loadFile(path.join(__dirname, "../../dist/titlebar.html"));
     }
 }
 
@@ -33,9 +34,7 @@ const GMAIL_INITIAL_URL =
     "https://accounts.google.com/ServiceLogin?service=mail&continue=https%3A%2F%2Fmail.google.com%2Fmail%2Fu%2F0";
 
 function loadInjected(name: string): string {
-    const dir = app.isPackaged
-        ? path.join(process.resourcesPath, "injected")
-        : path.join(app.getAppPath(), "dist-injected");
+    const dir = isDev ? path.join(app.getAppPath(), "dist-injected") : path.join(process.resourcesPath, "injected");
     return readFileSync(path.join(dir, name), "utf-8");
 }
 
@@ -106,13 +105,6 @@ export function reloadGmail(): void {
     if (_gmailView && !_gmailView.webContents.isDestroyed()) _gmailView.webContents.reload();
 }
 
-export function executeInGmail(js: string): void {
-    if (!_gmailView || _gmailView.webContents.isDestroyed()) return;
-    _gmailView.webContents.executeJavaScript(js).catch((e: unknown) => {
-        logger.warn("[gmail] executeJavaScript failed:", e);
-    });
-}
-
 export function zoomIn(): void {
     if (_gmailWindow && !_gmailWindow.isDestroyed()) applyZoom(_currentZoom + ZOOM_STEP);
 }
@@ -158,7 +150,7 @@ function attachNavigationHandlers(wc: WebContents): void {
             if (GMAIL_ALLOWED_HOSTS.has(host)) {
                 void wc.loadURL(url);
             } else {
-                safeOpenExternal(url);
+                openExternal(url);
             }
         } catch (e) {
             logger.debug("[gmail] setWindowOpenHandler — malformed URL:", e);
@@ -171,7 +163,7 @@ function attachNavigationHandlers(wc: WebContents): void {
             const host = new URL(url).hostname;
             if (!GMAIL_ALLOWED_HOSTS.has(host)) {
                 event.preventDefault();
-                safeOpenExternal(url);
+                openExternal(url);
             }
         } catch {
             event.preventDefault();

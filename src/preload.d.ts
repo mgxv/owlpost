@@ -24,6 +24,7 @@ interface OwlpostAPI {
         check: () => Promise<void>;
         install: () => Promise<void>;
         pendingVersion: () => Promise<string | null>;
+        onDownloading: (handler: (version: string) => void) => UnsubFn;
         onReady: (handler: (version: string) => void) => UnsubFn;
     };
     app: {
@@ -36,7 +37,6 @@ declare global {
     interface Window {
         owlpost: OwlpostAPI;
         __owlpost__: {
-            EMAIL_RE: RegExp;
             onReady: (fn: () => void) => void;
             emit: (name: string, payload: unknown) => void;
         };

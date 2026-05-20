@@ -1,6 +1,6 @@
 import { BrowserWindow } from "electron";
 import { getCurrentZoom } from "./gmail";
-import { PRELOAD_GMAIL, safeOpenExternal, GMAIL_ALLOWED_HOSTS } from "./shared";
+import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS } from "./shared";
 
 const BLANK_COMPOSE_URL = "https://mail.google.com/mail/?view=cm&fs=1";
 
@@ -46,7 +46,7 @@ export function openCompose(mailtoUrl?: string): void {
             const host = new URL(navUrl).hostname;
             if (!GMAIL_ALLOWED_HOSTS.has(host)) {
                 event.preventDefault();
-                safeOpenExternal(navUrl);
+                openExternal(navUrl);
             }
         } catch {
             event.preventDefault();
@@ -54,7 +54,7 @@ export function openCompose(mailtoUrl?: string): void {
     });
 
     win.webContents.setWindowOpenHandler(({ url: popupUrl }) => {
-        safeOpenExternal(popupUrl);
+        openExternal(popupUrl);
         return { action: "deny" };
     });
 
