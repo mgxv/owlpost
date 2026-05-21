@@ -60,6 +60,7 @@ export function openCompose(mailtoUrl?: string): void {
 
     const win = new BrowserWindow({
         ...state,
+        show: false,
         minWidth: 600,
         minHeight: 500,
         title: "New Message",
@@ -69,6 +70,10 @@ export function openCompose(mailtoUrl?: string): void {
             sandbox: true,
             nodeIntegration: false,
         },
+    });
+
+    win.once("ready-to-show", () => {
+        win.show();
     });
 
     void win.loadURL(url);
