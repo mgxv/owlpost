@@ -16,7 +16,7 @@ export function checkForUpdates(onReady: (version: string) => void, onDownloadin
     if (isDev) return;
 
     autoUpdater.autoDownload = true;
-    autoUpdater.autoInstallOnAppQuit = false;
+    autoUpdater.autoInstallOnAppQuit = true;
 
     autoUpdater.on("update-available", (info: UpdateInfo) => {
         onDownloading(info.version);
