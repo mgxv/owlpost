@@ -1,6 +1,9 @@
-import { BrowserWindow } from "electron";
+import { app, BrowserWindow } from "electron";
+import { readFileSync, writeFileSync } from "fs";
+import path from "path";
 import { getCurrentZoom } from "./gmail";
-import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS } from "./shared";
+import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS, type WindowState } from "./shared";
+import { logger } from "../core/logger";
 
 const BLANK_COMPOSE_URL = "https://mail.google.com/mail/?view=cm&fs=1";
 
@@ -10,6 +13,36 @@ function parseMailtoUrl(mailtoUrl: string): string {
     compose.searchParams.set("extsrc", "mailto");
     compose.searchParams.set("url", mailtoUrl);
     return compose.toString();
+}
+
+const COMPOSE_DEFAULTS: WindowState = { width: 900, height: 700 };
+
+let _composeStatePath = "";
+
+function getComposeStatePath(): string {
+    if (!_composeStatePath) {
+        _composeStatePath = path.join(app.getPath("userData"), "compose-state.json");
+    }
+    return _composeStatePath;
+}
+
+function loadComposeState(): WindowState {
+    try {
+        const saved = JSON.parse(readFileSync(getComposeStatePath(), "utf-8")) as Partial<WindowState>;
+        return { ...COMPOSE_DEFAULTS, ...saved };
+    } catch {
+        return COMPOSE_DEFAULTS;
+    }
+}
+
+function saveComposeState(win: BrowserWindow): void {
+    if (win.isMinimized() || win.isMaximized()) return;
+    const bounds = win.getBounds();
+    try {
+        writeFileSync(getComposeStatePath(), JSON.stringify(bounds, null, 2));
+    } catch (e) {
+        logger.warn("[compose] save state failed:", e);
+    }
 }
 
 let _composeWindow: BrowserWindow | null = null;
@@ -23,10 +56,10 @@ export function openCompose(mailtoUrl?: string): void {
     }
 
     const url = mailtoUrl ? parseMailtoUrl(mailtoUrl) : BLANK_COMPOSE_URL;
+    const state = loadComposeState();
 
     const win = new BrowserWindow({
-        width: 900,
-        height: 700,
+        ...state,
         minWidth: 600,
         minHeight: 500,
         title: "New Message",
@@ -56,6 +89,13 @@ export function openCompose(mailtoUrl?: string): void {
     win.webContents.setWindowOpenHandler(({ url: popupUrl }) => {
         openExternal(popupUrl);
         return { action: "deny" };
+    });
+
+    win.on("resize", () => {
+        saveComposeState(win);
+    });
+    win.on("move", () => {
+        saveComposeState(win);
     });
 
     win.on("closed", () => {
