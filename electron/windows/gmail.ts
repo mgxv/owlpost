@@ -5,7 +5,7 @@ import Findbar from "electron-findbar";
 import { isDev } from "../core/env";
 import { logger } from "../core/logger";
 import { getPref } from "../core/store";
-import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS } from "./shared";
+import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS, type WindowState } from "./shared";
 
 const TITLEBAR_HEIGHT = 32;
 const PRELOAD_TITLEBAR = path.join(__dirname, "../preload/titlebar.js");
@@ -46,13 +46,6 @@ async function injectGmailScripts(wc: WebContents): Promise<void> {
     } catch (e) {
         logger.error("[inject] executeJavaScript:", e);
     }
-}
-
-interface WindowState {
-    x?: number;
-    y?: number;
-    width: number;
-    height: number;
 }
 
 const ZOOM_STEP = 5;
