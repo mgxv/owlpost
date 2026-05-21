@@ -40,7 +40,6 @@ export function initPrefsWindow(isQuitting: () => boolean): void {
             contextIsolation: true,
             sandbox: true,
             nodeIntegration: false,
-            backgroundThrottling: false,
         },
     });
 
