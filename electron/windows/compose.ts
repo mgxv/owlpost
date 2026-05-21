@@ -2,7 +2,7 @@ import { app, BrowserWindow } from "electron";
 import { readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { getCurrentZoom } from "./gmail";
-import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS, type WindowState } from "./shared";
+import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS, clampToDisplays, type WindowState } from "./shared";
 import { logger } from "../core/logger";
 
 const BLANK_COMPOSE_URL = "https://mail.google.com/mail/?view=cm&fs=1";
@@ -29,7 +29,7 @@ function getComposeStatePath(): string {
 function loadComposeState(): WindowState {
     try {
         const saved = JSON.parse(readFileSync(getComposeStatePath(), "utf-8")) as Partial<WindowState>;
-        return { ...COMPOSE_DEFAULTS, ...saved };
+        return clampToDisplays({ ...COMPOSE_DEFAULTS, ...saved });
     } catch {
         return COMPOSE_DEFAULTS;
     }

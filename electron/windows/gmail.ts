@@ -5,7 +5,7 @@ import Findbar from "electron-findbar";
 import { isDev } from "../core/env";
 import { logger } from "../core/logger";
 import { getPref } from "../core/store";
-import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS, type WindowState } from "./shared";
+import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS, clampToDisplays, type WindowState } from "./shared";
 
 const TITLEBAR_HEIGHT = 32;
 const PRELOAD_TITLEBAR = path.join(__dirname, "../preload/titlebar.js");
@@ -129,7 +129,8 @@ function applyZoom(percent: number): void {
 function loadWindowState(): WindowState {
     const defaults: WindowState = { width: 1200, height: 800 };
     try {
-        return { ...defaults, ...(JSON.parse(readFileSync(_windowStatePath, "utf-8")) as Partial<WindowState>) };
+        const saved = JSON.parse(readFileSync(_windowStatePath, "utf-8")) as Partial<WindowState>;
+        return clampToDisplays({ ...defaults, ...saved });
     } catch {
         return defaults;
     }
