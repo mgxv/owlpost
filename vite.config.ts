@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => ({
             input: {
                 main: resolve(__dirname, "index.html"),
                 titlebar: resolve(__dirname, "titlebar.html"),
+                error: resolve(__dirname, "errorPage.html"),
             },
         },
     },

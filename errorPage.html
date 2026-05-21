@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <style>
+            @import "tailwindcss";
+            @custom-variant dark (@media (prefers-color-scheme: dark));
+        </style>
+    </head>
+    <body
+        class="m-0 flex min-h-screen flex-col items-center justify-center bg-white p-8 text-center font-sans dark:bg-neutral-900"
+    >
+        <h2 class="mb-2 text-lg font-semibold text-neutral-700 dark:text-neutral-200">Could not reach Gmail</h2>
+        <p id="desc" class="mb-6 text-sm text-neutral-500 dark:text-neutral-400"></p>
+        <button
+            id="retry"
+            class="cursor-pointer rounded border border-neutral-300 bg-neutral-100 px-5 py-2 text-sm text-neutral-700 hover:bg-neutral-200 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+        >
+            Retry
+        </button>
+        <script type="module">
+            document.getElementById("desc").textContent = new URLSearchParams(location.search).get("desc") ?? "";
+            document.getElementById("retry").addEventListener("click", () => {
+                location.assign("https://mail.google.com/");
+            });
+        </script>
+    </body>
+</html>
