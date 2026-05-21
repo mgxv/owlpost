@@ -9,7 +9,7 @@ declare global {
             goForward(): void;
             openPrefs(): void;
             openFind(): void;
-            onUpdate(fn: (s: { canGoBack: boolean; canGoForward: boolean; title: string }) => void): void;
+            onUpdate(fn: (s: { canGoBack: boolean; canGoForward: boolean; title: string }) => void): () => void;
         };
     }
 }

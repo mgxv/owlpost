@@ -15,9 +15,11 @@ contextBridge.exposeInMainWorld("tb", {
     openFind(): void {
         ipcRenderer.send("tb:open-find");
     },
-    onUpdate(fn: (s: NavState) => void): void {
-        ipcRenderer.on("tb:update", (_e, s) => {
+    onUpdate(fn: (s: NavState) => void): () => void {
+        const listener = (_e: Electron.IpcRendererEvent, s: unknown) => {
             fn(s as NavState);
-        });
+        };
+        ipcRenderer.on("tb:update", listener);
+        return () => ipcRenderer.off("tb:update", listener);
     },
 });
