@@ -64,6 +64,15 @@ let _gmailView: WebContentsView | null = null;
 let _titlebarView: WebContentsView | null = null;
 let _currentZoom = 100;
 let _windowStatePath = "";
+let _currentAccount: string | null = null;
+
+function extractAccount(url: string): string | null {
+    try {
+        return new URL(url).pathname.match(/^\/mail\/u\/(\d+)/)?.[1] ?? null;
+    } catch {
+        return null;
+    }
+}
 
 function pushTitlebarState(wc: WebContents): void {
     if (!_titlebarView || _titlebarView.webContents.isDestroyed()) return;
@@ -237,10 +246,16 @@ export function createGmailWindow(windowStatePath: string, isQuitting: () => boo
 
     attachNavigationHandlers(gmailView.webContents);
 
+    gmailView.webContents.on("did-navigate", (_event, url) => {
+        const account = extractAccount(url);
+        if (account !== null && account !== _currentAccount) {
+            _currentAccount = account;
+            gmailView.webContents.navigationHistory.clear();
+        }
+        if (isMac) pushTitlebarState(gmailView.webContents);
+    });
+
     if (isMac) {
-        gmailView.webContents.on("did-navigate", () => {
-            pushTitlebarState(gmailView.webContents);
-        });
         gmailView.webContents.on("did-navigate-in-page", () => {
             pushTitlebarState(gmailView.webContents);
         });
