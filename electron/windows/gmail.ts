@@ -38,6 +38,16 @@ function loadInjected(name: string): string {
     return readFileSync(path.join(dir, name), "utf-8");
 }
 
+function loadErrorPage(wc: WebContents, description: string): void {
+    if (isDev) {
+        const url = new URL("http://localhost:3000/errorPage.html");
+        url.searchParams.set("desc", description);
+        void wc.loadURL(url.toString());
+    } else {
+        void wc.loadFile(path.join(__dirname, "../../dist/errorPage.html"), { query: { desc: description } });
+    }
+}
+
 async function injectGmailScripts(wc: WebContents): Promise<void> {
     if (wc.isDestroyed()) return;
     try {
@@ -228,14 +238,7 @@ export function createGmailWindow(windowStatePath: string, isQuitting: () => boo
         if (!isMainFrame) return;
         if (errorCode === -3) return; // ERR_ABORTED — user navigated away before load completed
         logger.error("[gmail] did-fail-load:", errorCode, errorDescription);
-        const html = encodeURIComponent(
-            `<!DOCTYPE html><html><body style="font-family:system-ui;text-align:center;padding:3rem">` +
-                `<h2 style="color:#444">Could not reach Gmail</h2>` +
-                `<p style="color:#666">${errorDescription}</p>` +
-                `<button onclick="window.location.assign('${GMAIL_INITIAL_URL}')" style="padding:8px 16px;cursor:pointer">Retry</button>` +
-                `</body></html>`,
-        );
-        void gmailView.webContents.loadURL(`data:text/html;charset=utf-8,${html}`);
+        loadErrorPage(gmailView.webContents, errorDescription);
     });
 
     attachNavigationHandlers(gmailView.webContents);
