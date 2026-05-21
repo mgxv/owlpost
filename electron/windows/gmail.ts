@@ -55,7 +55,7 @@ interface WindowState {
     height: number;
 }
 
-const ZOOM_STEP = 10;
+const ZOOM_STEP = 5;
 const ZOOM_MIN = 80;
 const ZOOM_MAX = 120;
 

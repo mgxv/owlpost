@@ -1,6 +1,6 @@
 import type { SystemTheme } from "../usePreferences";
 
-const ZOOM_OPTIONS = [80, 90, 100, 110, 120] as const;
+const ZOOM_OPTIONS = [80, 85, 90, 95, 100, 105, 110, 115, 120] as const;
 
 interface Props {
     systemTheme: SystemTheme;
