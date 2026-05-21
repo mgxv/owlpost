@@ -56,8 +56,8 @@ interface WindowState {
 }
 
 const ZOOM_STEP = 10;
-const ZOOM_MIN = 50;
-const ZOOM_MAX = 150;
+const ZOOM_MIN = 80;
+const ZOOM_MAX = 120;
 
 let _gmailWindow: BrowserWindow | null = null;
 let _gmailView: WebContentsView | null = null;
