@@ -18,11 +18,11 @@ export function checkForUpdates(onReady: (version: string) => void, onDownloadin
     autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = true;
 
-    autoUpdater.on("update-available", (info: UpdateInfo) => {
+    autoUpdater.once("update-available", (info: UpdateInfo) => {
         onDownloading(info.version);
     });
 
-    autoUpdater.on("update-downloaded", (info: UpdateInfo) => {
+    autoUpdater.once("update-downloaded", (info: UpdateInfo) => {
         pendingVersion = info.version;
         onReady(info.version);
     });
