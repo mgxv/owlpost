@@ -22,6 +22,29 @@ export function usePreferences(): UsePreferences {
     useEffect(() => {
         let cancelled = false as boolean;
 
+        const unsubChange = window.owlpost.prefs.onChange((key, value) => {
+            switch (key) {
+                case "systemTheme":
+                    setSystemThemeState(value as SystemTheme);
+                    break;
+                case "defaultZoom":
+                    setDefaultZoomState(value as number);
+                    break;
+                case "showDockBadge":
+                    setShowDockBadgeState(value as boolean);
+                    break;
+                case "launchAtStartup":
+                    setLaunchAtStartupState(value as boolean);
+                    break;
+                case "crashReporting":
+                    setCrashReportingState(value as boolean);
+                    break;
+                case "notificationsEnabled":
+                    setNotificationsEnabledState(value as boolean);
+                    break;
+            }
+        });
+
         void (async () => {
             try {
                 const prefs = await window.owlpost.prefs.get();
@@ -48,6 +71,7 @@ export function usePreferences(): UsePreferences {
 
         return () => {
             cancelled = true;
+            unsubChange();
         };
     }, []);
 
