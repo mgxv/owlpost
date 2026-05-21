@@ -29,7 +29,7 @@
         "dev": "npm run build:main && npm run build:preload && npm run build:injected && concurrently -k -n renderer,electron -c green,blue \"npm run dev:renderer\" \"npm run dev:electron\"",
         "dev:renderer": "vite --port 3000",
         "dev:electron": "wait-on tcp:3000 && electron .",
-        "build": "npm run build:renderer && npm run build:main && npm run build:preload && npm run build:injected",
+        "build": "npm run typecheck && npm run build:renderer && npm run build:main && npm run build:preload && npm run build:injected",
         "build:renderer": "vite build",
         "build:main": "tsc -p tsconfig.node.json",
         "build:preload": "esbuild electron/preload/prefs.ts electron/preload/gmail.ts electron/preload/titlebar.ts --bundle --platform=node --target=es2022 --external:electron --outdir=dist-electron/preload",
