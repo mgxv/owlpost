@@ -74,6 +74,7 @@ let _titlebarView: WebContentsView | null = null;
 let _currentZoom = 100;
 let _windowStatePath = "";
 let _currentAccount: string | null = null;
+let _lastTitlebarKey: string | null = null;
 
 function extractAccount(url: string): string | null {
     try {
@@ -86,11 +87,12 @@ function extractAccount(url: string): string | null {
 function pushTitlebarState(wc: WebContents): void {
     if (!_titlebarView || _titlebarView.webContents.isDestroyed()) return;
     const title = wc.getTitle().match(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/i)?.[0] ?? "Gmail";
-    _titlebarView.webContents.send("tb:update", {
-        canGoBack: wc.navigationHistory.canGoBack(),
-        canGoForward: wc.navigationHistory.canGoForward(),
-        title,
-    });
+    const canGoBack = wc.navigationHistory.canGoBack();
+    const canGoForward = wc.navigationHistory.canGoForward();
+    const key = `${String(canGoBack)}|${String(canGoForward)}|${title}`;
+    if (key === _lastTitlebarKey) return;
+    _lastTitlebarKey = key;
+    _titlebarView.webContents.send("tb:update", { canGoBack, canGoForward, title });
 }
 
 export function getGmailWindow(): BrowserWindow | null {
