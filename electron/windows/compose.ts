@@ -45,14 +45,19 @@ function saveComposeState(win: BrowserWindow): void {
     }
 }
 
-let _composeWindow: BrowserWindow | null = null;
+const _composeWindows = new Set<BrowserWindow>();
 
 export function openCompose(mailtoUrl?: string): void {
-    if (_composeWindow && !_composeWindow.isDestroyed()) {
-        if (_composeWindow.isMinimized()) _composeWindow.restore();
-        _composeWindow.show();
-        _composeWindow.focus();
-        return;
+    // Blank compose reuses an existing window rather than stacking duplicates.
+    if (!mailtoUrl) {
+        for (const existing of _composeWindows) {
+            if (!existing.isDestroyed()) {
+                if (existing.isMinimized()) existing.restore();
+                existing.show();
+                existing.focus();
+                return;
+            }
+        }
     }
 
     const url = mailtoUrl ? parseMailtoUrl(mailtoUrl) : BLANK_COMPOSE_URL;
@@ -104,8 +109,8 @@ export function openCompose(mailtoUrl?: string): void {
     });
 
     win.on("closed", () => {
-        _composeWindow = null;
+        _composeWindows.delete(win);
     });
 
-    _composeWindow = win;
+    _composeWindows.add(win);
 }
