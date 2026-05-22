@@ -30,6 +30,7 @@ interface OwlpostAPI {
     app: {
         reset: () => Promise<void>;
         relaunch: () => Promise<void>;
+        resetWindowStates: () => Promise<void>;
     };
 }
 
