@@ -33,9 +33,15 @@ function loadTitlebar(wc: WebContents): void {
 const GMAIL_INITIAL_URL =
     "https://accounts.google.com/ServiceLogin?service=mail&continue=https%3A%2F%2Fmail.google.com%2Fmail%2Fu%2F0";
 
+const _injectedCache = new Map<string, string>();
+
 function loadInjected(name: string): string {
+    const cached = _injectedCache.get(name);
+    if (cached !== undefined) return cached;
     const dir = isDev ? path.join(app.getAppPath(), "dist-injected") : path.join(process.resourcesPath, "injected");
-    return readFileSync(path.join(dir, name), "utf-8");
+    const content = readFileSync(path.join(dir, name), "utf-8");
+    _injectedCache.set(name, content);
+    return content;
 }
 
 function loadErrorPage(wc: WebContents, description: string): void {
