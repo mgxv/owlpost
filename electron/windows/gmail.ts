@@ -1,5 +1,5 @@
 import { app, BrowserWindow, WebContentsView, nativeTheme, type WebContents } from "electron";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, unlinkSync } from "fs";
 import path from "path";
 import Findbar from "electron-findbar";
 import { isDev } from "../core/env";
@@ -111,6 +111,15 @@ export function showGmailWindow(): void {
     if (_gmailWindow.isMinimized()) _gmailWindow.restore();
     _gmailWindow.show();
     _gmailWindow.focus();
+}
+
+export function resetWindowState(): void {
+    if (!_windowStatePath) return;
+    try {
+        unlinkSync(_windowStatePath);
+    } catch {
+        /* already absent */
+    }
 }
 
 export function reloadGmail(): void {

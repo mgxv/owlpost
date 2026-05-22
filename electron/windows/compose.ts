@@ -1,5 +1,5 @@
 import { app, BrowserWindow } from "electron";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, unlinkSync } from "fs";
 import path from "path";
 import { getCurrentZoom } from "./gmail";
 import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS, clampToDisplays, type WindowState } from "./shared";
@@ -32,6 +32,14 @@ function loadComposeState(): WindowState {
         return clampToDisplays({ ...COMPOSE_DEFAULTS, ...saved });
     } catch {
         return COMPOSE_DEFAULTS;
+    }
+}
+
+export function resetComposeState(): void {
+    try {
+        unlinkSync(getComposeStatePath());
+    } catch {
+        /* already absent */
     }
 }
 

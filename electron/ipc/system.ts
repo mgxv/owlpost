@@ -6,10 +6,13 @@ import {
     IPC_UPDATE_PENDING,
     IPC_APP_RESET,
     IPC_APP_RELAUNCH,
+    IPC_RESET_WINDOW_STATES,
 } from "../core/constants";
 import { getPendingVersion, manualCheck, installUpdate } from "../services/updater";
 import { getPrefsWindow } from "../windows/prefs";
 import { DEFAULTS, setPref, type Prefs } from "../core/store";
+import { resetWindowState } from "../windows/gmail";
+import { resetComposeState } from "../windows/compose";
 
 export function registerSystemIpc(markQuitting: () => void): void {
     ipcMain.handle(IPC_UPDATE_CHECK, async () => {
@@ -41,5 +44,10 @@ export function registerSystemIpc(markQuitting: () => void): void {
         markQuitting();
         app.relaunch();
         app.exit(0);
+    });
+
+    ipcMain.handle(IPC_RESET_WINDOW_STATES, () => {
+        resetWindowState();
+        resetComposeState();
     });
 }
