@@ -1,4 +1,4 @@
-import { BrowserWindow, nativeTheme } from "electron";
+import { BrowserWindow, nativeTheme, session } from "electron";
 import path from "path";
 import { getPref } from "../core/store";
 import { isDev } from "../core/env";
@@ -40,6 +40,7 @@ export function initPrefsWindow(isQuitting: () => boolean): void {
             contextIsolation: true,
             sandbox: true,
             nodeIntegration: false,
+            session: session.fromPartition("persist:prefs"),
         },
     });
 
