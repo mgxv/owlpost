@@ -1,4 +1,4 @@
-import { ipcMain, Notification } from "electron";
+import { ipcMain, Notification, crashReporter } from "electron";
 import {
     IPC_PREFS_GET,
     IPC_PREFS_SET,
@@ -43,6 +43,9 @@ export function registerPrefsIpc(): void {
         if (key === "defaultZoom") zoomReset();
         if (key === "showDockBadge") applyBadge(value as boolean);
         if (key === "launchAtStartup") applyLaunchAtLogin(value as boolean);
+        if (key === "crashReporting" && value === true && process.env.SENTRY_DSN) {
+            crashReporter.start({ submitURL: process.env.SENTRY_DSN });
+        }
 
         getPrefsWindow()?.webContents.send(IPC_PREFS_CHANGED, { key, value });
     });

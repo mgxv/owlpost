@@ -23,10 +23,6 @@ import { initPrefsWindow, togglePrefs, getPrefsWindow } from "./windows/prefs";
 import { buildMenu } from "./services/menu";
 import { IPC_UPDATE_DOWNLOADING, IPC_UPDATE_READY } from "./core/constants";
 
-if (process.env.SENTRY_DSN) {
-    crashReporter.start({ submitURL: process.env.SENTRY_DSN });
-}
-
 process.on("unhandledRejection", (reason) => {
     logger.error("[main] unhandledRejection:", reason);
 });
@@ -83,6 +79,10 @@ void app.whenReady().then(async () => {
     const windowStatePath = path.join(userData, "window-state.json");
 
     await initStore();
+
+    if (process.env.SENTRY_DSN && getPref("crashReporting")) {
+        crashReporter.start({ submitURL: process.env.SENTRY_DSN });
+    }
 
     const ua = session.defaultSession
         .getUserAgent()
