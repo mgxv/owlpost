@@ -36,7 +36,9 @@ export function buildMenu(cb: MenuCallbacks): Menu {
                 {
                     label: "New Message",
                     accelerator: "CmdOrCtrl+Shift+N",
-                    click: cb.onCompose,
+                    click: () => {
+                        cb.onCompose();
+                    },
                 },
             ],
         },
