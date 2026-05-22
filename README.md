@@ -61,15 +61,15 @@ owlpost/
 │   │   └── store.ts                  electron-store wrapper — typed preference persistence
 │   │
 │   ├── windows/                      BrowserWindow factories and lifecycle management
-│   │   ├── shared.ts                 PRELOAD_GMAIL path and safeOpenExternal
-│   │   ├── gmail.ts                  Gmail window — two WebContentsViews, zoom, script injection, findbar
-│   │   ├── compose.ts                Compose window (single-instance, mailto: support)
+│   │   ├── shared.ts                 PRELOAD_GMAIL path, openExternal, GMAIL_ALLOWED_HOSTS, WindowState, clampToDisplays
+│   │   ├── gmail.ts                  Gmail window — two WebContentsViews, zoom, script injection, findbar, window-state persistence
+│   │   ├── compose.ts                Compose window — reuses blank window, opens new window per mailto: URL, window-state persistence
 │   │   └── prefs.ts                  Preferences window (eager init, hidden until toggled)
 │   │
 │   ├── ipc/                          IPC handler registration
-│   │   ├── gmail.ts                  Titlebar navigation, findbar, and Gmail injected-script events
+│   │   ├── gmail.ts                  Titlebar navigation, findbar, notifications (with window focus on click), and Gmail injected-script events
 │   │   ├── prefs.ts                  Read/write user preferences
-│   │   └── system.ts                 App reset, relaunch, and update handlers
+│   │   └── system.ts                 App reset, relaunch, window state reset, and update handlers
 │   │
 │   ├── preload/                      Preload scripts (renderer context, no Node access)
 │   │   ├── gmail.ts                  Exposes window.__owlpost__ bridge for injected scripts
@@ -98,7 +98,7 @@ owlpost/
 │   ├── preload.d.ts                  Global types for window.owlpost and window.__owlpost__
 │   └── components/
 │       ├── GeneralTab.tsx            Notifications, dock badge, launch-at-login settings
-│       ├── AppearanceTab.tsx         Theme and zoom settings
+│       ├── AppearanceTab.tsx         Theme, zoom, and window position reset
 │       ├── AdvancedTab.tsx           Crash reporting, app reset, relaunch
 │       ├── UpdateChecker.tsx         Check for updates / install / restart button
 │       └── NotificationsSetupDialog.tsx  Step-by-step guide to enabling Gmail notifications
@@ -106,6 +106,7 @@ owlpost/
 ├── build-resources/                  Icons and code-signing entitlements
 ├── index.html                        Vite HTML entry for the preferences renderer
 ├── titlebar.html                     Vite HTML entry for the custom Gmail titlebar
+├── errorPage.html                    Vite HTML entry for the network-error fallback page
 ├── package.json
 ├── electron-builder.yml              Distribution config (DMG + ZIP, GitHub releases)
 ├── tsconfig.json                     Renderer TypeScript config
@@ -136,13 +137,19 @@ The window is created with `show: false` and revealed only after the titlebar vi
 
 ### Custom titlebar
 
-`titlebar.html` is a second Vite MPA entry compiled alongside `index.html`. Its CSS lives in an inline `<style>` block processed by `@tailwindcss/vite`. Dark mode uses `@custom-variant dark (@media (prefers-color-scheme: dark))` — Electron maps `nativeTheme.themeSource` to the system `prefers-color-scheme` media query, so the titlebar correctly follows the user's theme preference without any JS.
+`titlebar.html` is a second Vite MPA entry compiled alongside `index.html` (a third entry, `errorPage.html`, serves the network-error fallback). Its CSS lives in an inline `<style>` block processed by `@tailwindcss/vite`. Dark mode uses `@custom-variant dark (@media (prefers-color-scheme: dark))` — Electron maps `nativeTheme.themeSource` to the system `prefers-color-scheme` media query, so the titlebar correctly follows the user's theme preference without any JS.
 
 Icons (back, forward, find, preferences) are React Heroicons mounted into empty button elements via `createRoot` — no JSX, no separate React tree.
 
 ### Find-in-page
 
 `electron-findbar` creates a child `BrowserWindow` positioned over the Gmail view. Configuration (theme, position, background color) is set once at module init via `Findbar.setDefaultTheme`, `Findbar.setDefaultBoundsHandler`, and `Findbar.setDefaultWindowHandler`. `Cmd+F` triggers it via the app menu accelerator; the magnifying glass button in the custom titlebar sends `tb:open-find` via IPC.
+
+When `nativeTheme` fires its `updated` event, `gmail.ts` immediately syncs the findbar window's background color so it stays consistent while the bar is open.
+
+### Error page
+
+`errorPage.html` is a third Vite MPA entry loaded into the Gmail `WebContentsView` on `did-fail-load`. It reads the error description from the `?desc=` query parameter and renders a centered message with a **Retry** button that navigates to `https://mail.google.com/`. Dark mode is handled by the same Tailwind `@custom-variant dark` approach used by the titlebar.
 
 ### Security model
 
@@ -159,7 +166,8 @@ All windows use `contextIsolation: true`, `sandbox: true`, and `nodeIntegration:
 ```
 Injected script  →  window.__owlpost__.emit(name, payload)
                  →  ipcRenderer.send("owlpost:from-gmail", { name, payload })
-                 →  ipcMain.on  (ipc/gmail.ts)  →  badge / notification
+                 →  ipcMain.on  (ipc/gmail.ts)  →  badge update / show Notification
+                                                    Notification "click" → showGmailWindow()
 
 Titlebar button  →  window.tb.goBack() / goForward() / openFind() / openPrefs()
                  →  ipcRenderer.send("tb:go-back" | "tb:go-forward" | "tb:open-find" | "tb:open-prefs")
@@ -167,6 +175,10 @@ Titlebar button  →  window.tb.goBack() / goForward() / openFind() / openPrefs(
 
 Main process     →  _titlebarView.webContents.send("tb:update", { canGoBack, canGoForward, title })
                  →  window.tb.onUpdate(fn)  (titlebar renderer)
+
+Prefs renderer   →  window.owlpost.app.resetWindowStates()
+                 →  ipcRenderer.invoke("owlpost:app:reset-window-states")
+                 →  ipcMain.handle  (ipc/system.ts)  →  resetWindowState() + resetComposeState()
 ```
 
 All preference channel names live in `core/constants.ts` — no raw strings appear in handlers. Titlebar IPC channels use the `tb:` prefix and are defined inline as they are titlebar-specific.
