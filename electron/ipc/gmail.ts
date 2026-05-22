@@ -2,7 +2,7 @@ import { ipcMain, Notification } from "electron";
 import { IPC_FROM_GMAIL } from "../core/constants";
 import { getPref } from "../core/store";
 import { updateBadge } from "../services/badge";
-import { getGmailWebContents, openFindbar } from "../windows/gmail";
+import { getGmailWebContents, openFindbar, showGmailWindow } from "../windows/gmail";
 import { showPrefs } from "../windows/prefs";
 import { logger } from "../core/logger";
 
@@ -38,7 +38,11 @@ export function registerGmailIpc(): void {
                     payload !== null
                 ) {
                     const p = payload as { title?: string; body?: string };
-                    new Notification({ title: p.title ?? "Owlpost", body: p.body ?? "" }).show();
+                    const n = new Notification({ title: p.title ?? "Owlpost", body: p.body ?? "" });
+                    n.on("click", () => {
+                        showGmailWindow();
+                    });
+                    n.show();
                 }
                 break;
 
