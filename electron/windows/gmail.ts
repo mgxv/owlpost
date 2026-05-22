@@ -293,6 +293,7 @@ export function createGmailWindow(windowStatePath: string, isQuitting: () => boo
 
     // Hide on close so the Gmail session (cookies, service workers) stays alive; Cmd+Q still quits.
     win.on("close", (event) => {
+        saveWindowState(win);
         if (!isQuitting()) {
             event.preventDefault();
             win.hide();
@@ -300,7 +301,6 @@ export function createGmailWindow(windowStatePath: string, isQuitting: () => boo
     });
 
     win.on("resize", () => {
-        saveWindowState(win);
         const { width: w, height: h } = win.getBounds();
         if (!gmailView.webContents.isDestroyed()) {
             gmailView.setBounds({ x: 0, y: yOffset, width: w, height: h - yOffset });
@@ -308,9 +308,6 @@ export function createGmailWindow(windowStatePath: string, isQuitting: () => boo
         if (_titlebarView && !_titlebarView.webContents.isDestroyed()) {
             _titlebarView.setBounds({ x: 0, y: 0, width: w, height: TITLEBAR_HEIGHT });
         }
-    });
-    win.on("move", () => {
-        saveWindowState(win);
     });
 
     _gmailWindow = win;

@@ -109,10 +109,7 @@ export function openCompose(mailtoUrl?: string): void {
         return { action: "deny" };
     });
 
-    win.on("resize", () => {
-        saveComposeState(win);
-    });
-    win.on("move", () => {
+    win.on("close", () => {
         saveComposeState(win);
     });
 
