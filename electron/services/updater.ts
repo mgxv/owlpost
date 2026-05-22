@@ -1,5 +1,6 @@
 import { app } from "electron";
 import { writeFileSync } from "fs";
+import { randomUUID } from "crypto";
 import { spawn } from "child_process";
 import path from "path";
 import { autoUpdater, type UpdateInfo } from "electron-updater";
@@ -83,7 +84,7 @@ function installUpdateMac(): void {
 
     const appBundle = path.resolve(app.getAppPath(), "../../..");
     const installDir = path.dirname(appBundle);
-    const scriptPath = path.join(app.getPath("temp"), "owlpost-update.sh");
+    const scriptPath = path.join(app.getPath("temp"), `owlpost-update-${randomUUID()}.sh`);
 
     writeFileSync(
         scriptPath,
@@ -94,7 +95,7 @@ function installUpdateMac(): void {
             `open "${appBundle}"`,
             `rm -f "${scriptPath}"`,
         ].join("\n"),
-        { mode: 0o755 },
+        { mode: 0o700 },
     );
 
     spawn("/bin/bash", [scriptPath], { detached: true, stdio: "ignore" }).unref();
