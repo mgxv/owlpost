@@ -19,7 +19,7 @@ import {
     zoomReset,
 } from "./windows/gmail";
 import { openCompose } from "./windows/compose";
-import { initPrefsWindow, togglePrefs, getPrefsWindow } from "./windows/prefs";
+import { setupPrefs, togglePrefs, getPrefsWindow } from "./windows/prefs";
 import { buildMenu } from "./services/menu";
 import { IPC_UPDATE_DOWNLOADING, IPC_UPDATE_READY } from "./core/constants";
 
@@ -98,12 +98,12 @@ void app.whenReady().then(async () => {
     registerPrefsIpc();
     registerSystemIpc(markQuitting);
 
+    setupPrefs(() => isQuitting);
     createGmailWindow(windowStatePath, () => isQuitting);
-    initPrefsWindow(() => isQuitting);
 
     const menu = buildMenu({
         onPreferences: () => {
-            togglePrefs(() => isQuitting);
+            togglePrefs();
         },
         onCompose: openCompose,
         onReload: reloadGmail,

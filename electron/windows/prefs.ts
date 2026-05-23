@@ -10,6 +10,11 @@ const BG_LIGHT = "#f5f5f5";
 
 let _prefsWindow: BrowserWindow | null = null;
 let _ready = false;
+let _isQuitting: () => boolean = () => false;
+
+export function setupPrefs(isQuitting: () => boolean): void {
+    _isQuitting = isQuitting;
+}
 
 export function getPrefsWindow(): BrowserWindow | null {
     return _prefsWindow;
@@ -21,7 +26,7 @@ function resolveBackgroundColor(): string {
     return dark ? BG_DARK : BG_LIGHT;
 }
 
-export function initPrefsWindow(isQuitting: () => boolean): void {
+function initPrefsWindow(): BrowserWindow {
     _ready = false;
 
     const win = new BrowserWindow({
@@ -55,18 +60,25 @@ export function initPrefsWindow(isQuitting: () => boolean): void {
     }
 
     win.on("close", (event) => {
-        if (!isQuitting()) {
+        if (!_isQuitting()) {
             event.preventDefault();
             win.hide();
         }
     });
 
     _prefsWindow = win;
+    return win;
+}
+
+function getOrCreatePrefsWindow(): BrowserWindow {
+    if (!_prefsWindow || _prefsWindow.isDestroyed()) {
+        return initPrefsWindow();
+    }
+    return _prefsWindow;
 }
 
 export function showPrefs(): void {
-    const win = _prefsWindow;
-    if (!win || win.isDestroyed()) return;
+    const win = getOrCreatePrefsWindow();
     const doShow = (): void => {
         if (win.isMinimized()) win.restore();
         win.show();
@@ -79,24 +91,17 @@ export function showPrefs(): void {
     }
 }
 
-export function togglePrefs(isQuitting: () => boolean): void {
-    if (!_prefsWindow || _prefsWindow.isDestroyed()) {
-        initPrefsWindow(isQuitting);
-    }
-
-    const win = _prefsWindow;
-    if (!win) return;
+export function togglePrefs(): void {
+    const win = getOrCreatePrefsWindow();
     if (win.isVisible() && win.isFocused()) {
         win.hide();
         return;
     }
-
     const doShow = (): void => {
         if (win.isMinimized()) win.restore();
         win.show();
         win.focus();
     };
-
     if (_ready) {
         doShow();
     } else {
