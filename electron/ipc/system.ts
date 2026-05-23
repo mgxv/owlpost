@@ -32,6 +32,8 @@ export function registerSystemIpc(markQuitting: () => void): void {
     ipcMain.handle(IPC_APP_RESET, async () => {
         await session.defaultSession.clearStorageData();
         await session.defaultSession.clearCache();
+        await session.fromPartition("persist:prefs").clearStorageData();
+        await session.fromPartition("persist:prefs").clearCache();
         (Object.keys(DEFAULTS) as (keyof Prefs)[]).forEach((k) => {
             setPref(k, DEFAULTS[k] as never);
         });
