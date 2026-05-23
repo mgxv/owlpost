@@ -6,6 +6,13 @@ import { getGmailWebContents, openFindbar, showGmailWindow } from "../windows/gm
 import { showPrefs } from "../windows/prefs";
 import { logger } from "../core/logger";
 
+const NOTIF_MAX_TITLE = 100;
+const NOTIF_MAX_BODY = 250;
+
+function sanitizeText(value: unknown, max: number): string {
+    return (typeof value === "string" ? value : "").slice(0, max);
+}
+
 export function registerGmailIpc(): void {
     ipcMain.on("tb:go-back", () => {
         const wc = getGmailWebContents();
@@ -37,8 +44,10 @@ export function registerGmailIpc(): void {
                     typeof payload === "object" &&
                     payload !== null
                 ) {
-                    const p = payload as { title?: string; body?: string };
-                    const n = new Notification({ title: p.title ?? "Owlpost", body: p.body ?? "" });
+                    const p = payload as Record<string, unknown>;
+                    const title = sanitizeText(p["title"], NOTIF_MAX_TITLE) || "Owlpost";
+                    const body = sanitizeText(p["body"], NOTIF_MAX_BODY);
+                    const n = new Notification({ title, body });
                     n.on("click", () => {
                         showGmailWindow();
                     });
