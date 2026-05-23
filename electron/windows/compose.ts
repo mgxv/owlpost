@@ -41,13 +41,19 @@ export function resetComposeState(): void {
     } catch {
         /* already absent */
     }
+    for (const win of _composeWindows) {
+        if (!win.isDestroyed() && !win.isFullScreen()) {
+            win.setSize(COMPOSE_DEFAULTS.width, COMPOSE_DEFAULTS.height);
+            win.center();
+        }
+    }
 }
 
 function saveComposeState(win: BrowserWindow): void {
-    if (win.isMinimized() || win.isMaximized()) return;
+    if (win.isMinimized() || win.isMaximized() || win.isFullScreen()) return;
     const bounds = win.getBounds();
     try {
-        writeFileSync(getComposeStatePath(), JSON.stringify(bounds, null, 2));
+        writeFileSync(getComposeStatePath(), JSON.stringify(bounds, null, 4));
     } catch (e) {
         logger.warn("[compose] save state failed:", e);
     }

@@ -8,6 +8,7 @@ import { getPref } from "../core/store";
 import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS, clampToDisplays, type WindowState } from "./shared";
 
 const TITLEBAR_HEIGHT = 32;
+const WINDOW_DEFAULTS: WindowState = { width: 1200, height: 800 };
 const PRELOAD_TITLEBAR = path.join(__dirname, "../preload/titlebar.js");
 
 Findbar.setDefaultTheme("system");
@@ -128,6 +129,10 @@ export function resetWindowState(): void {
     } catch {
         /* already absent */
     }
+    if (_gmailWindow && !_gmailWindow.isDestroyed() && !_gmailWindow.isFullScreen()) {
+        _gmailWindow.setSize(WINDOW_DEFAULTS.width, WINDOW_DEFAULTS.height);
+        _gmailWindow.center();
+    }
 }
 
 export function reloadGmail(): void {
@@ -154,20 +159,19 @@ function applyZoom(percent: number): void {
 }
 
 function loadWindowState(): WindowState {
-    const defaults: WindowState = { width: 1200, height: 800 };
     try {
         const saved = JSON.parse(readFileSync(_windowStatePath, "utf-8")) as Partial<WindowState>;
-        return clampToDisplays({ ...defaults, ...saved });
+        return clampToDisplays({ ...WINDOW_DEFAULTS, ...saved });
     } catch {
-        return defaults;
+        return WINDOW_DEFAULTS;
     }
 }
 
 function saveWindowState(win: BrowserWindow): void {
-    if (win.isMinimized() || win.isMaximized()) return;
+    if (win.isMinimized() || win.isMaximized() || win.isFullScreen()) return;
     const bounds = win.getBounds();
     try {
-        writeFileSync(_windowStatePath, JSON.stringify(bounds, null, 2));
+        writeFileSync(_windowStatePath, JSON.stringify(bounds, null, 4));
     } catch (e) {
         logger.warn("[window-state] save failed:", e);
     }
