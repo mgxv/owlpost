@@ -28,6 +28,7 @@ export function checkForUpdates(onReady: (version: string) => void, onDownloadin
         onReady(info.version);
     });
 
+    autoUpdater.removeAllListeners("error");
     autoUpdater.on("error", (err: Error) => {
         logger.error("[updater] error:", err.message);
     });
@@ -40,6 +41,7 @@ export function checkForUpdates(onReady: (version: string) => void, onDownloadin
 export async function manualCheck(onDownloading: (version: string) => void): Promise<void> {
     if (isDev) return;
     autoUpdater.autoDownload = true;
+    autoUpdater.removeAllListeners("update-available");
     autoUpdater.once("update-available", (info: UpdateInfo) => {
         onDownloading(info.version);
     });
