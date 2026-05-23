@@ -168,7 +168,7 @@ function loadWindowState(): WindowState {
 }
 
 function saveWindowState(win: BrowserWindow): void {
-    if (win.isMinimized() || win.isMaximized() || win.isFullScreen()) return;
+    if (win.isMinimized() || win.isFullScreen()) return;
     const bounds = win.getBounds();
     try {
         writeFileSync(_windowStatePath, JSON.stringify(bounds, null, 4));
