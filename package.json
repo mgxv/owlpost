@@ -1,7 +1,7 @@
 {
     "name": "owlpost",
     "productName": "Owlpost",
-    "version": "0.3.2",
+    "version": "0.3.3",
     "author": "mgxv",
     "description": "Gmail in a native window",
     "license": "MIT",
