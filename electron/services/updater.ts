@@ -6,6 +6,7 @@ import path from "path";
 import { autoUpdater, type UpdateInfo } from "electron-updater";
 import { isDev } from "../core/env";
 import { logger } from "../core/logger";
+import { saveWindowState } from "../windows/gmail";
 
 let pendingVersion: string | null = null;
 
@@ -102,5 +103,6 @@ function installUpdateMac(): void {
 
     spawn("/bin/bash", [scriptPath], { detached: true, stdio: "ignore" }).unref();
     logger.info("[updater] spawned install script, exiting");
+    saveWindowState();
     app.exit(0);
 }

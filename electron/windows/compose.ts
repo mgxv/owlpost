@@ -50,7 +50,7 @@ export function resetComposeState(): void {
 }
 
 function saveComposeState(win: BrowserWindow): void {
-    if (win.isMinimized() || win.isMaximized() || win.isFullScreen()) return;
+    if (win.isMinimized() || win.isFullScreen()) return;
     const bounds = win.getBounds();
     try {
         writeFileSync(getComposeStatePath(), JSON.stringify(bounds, null, 4));

@@ -13,20 +13,17 @@ export interface WindowState {
     height: number;
 }
 
-// Strips saved position if it no longer falls on any connected display,
-// so the window doesn't open invisibly after a monitor is disconnected.
+export const TITLEBAR_HEIGHT = 32;
+
 export function clampToDisplays(state: WindowState): WindowState {
     const { x, y } = state;
     if (x === undefined || y === undefined) return state;
-    const visible = screen
-        .getAllDisplays()
-        .some(
-            ({ bounds }) =>
-                x < bounds.x + bounds.width &&
-                x + state.width > bounds.x &&
-                y < bounds.y + bounds.height &&
-                y + state.height > bounds.y,
-        );
+    const visible = screen.getAllDisplays().some(({ bounds }) => {
+        const titleBarVisible = y >= bounds.y && y + TITLEBAR_HEIGHT <= bounds.y + bounds.height;
+        const horizontallyReachable =
+            x + state.width > bounds.x + TITLEBAR_HEIGHT && x < bounds.x + bounds.width - TITLEBAR_HEIGHT;
+        return titleBarVisible && horizontallyReachable;
+    });
     if (visible) return state;
     return { width: state.width, height: state.height };
 }

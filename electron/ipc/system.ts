@@ -39,13 +39,13 @@ export function registerSystemIpc(markQuitting: () => void): void {
         });
         markQuitting();
         app.relaunch();
-        app.exit(0);
+        app.quit();
     });
 
     ipcMain.handle(IPC_APP_RELAUNCH, () => {
         markQuitting();
         app.relaunch();
-        app.exit(0);
+        app.quit();
     });
 
     ipcMain.handle(IPC_RESET_WINDOW_STATES, () => {
