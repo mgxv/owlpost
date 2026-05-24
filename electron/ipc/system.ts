@@ -4,6 +4,7 @@ import {
     IPC_UPDATE_DOWNLOADING,
     IPC_UPDATE_INSTALL,
     IPC_UPDATE_PENDING,
+    IPC_UPDATE_READY,
     IPC_APP_RESET,
     IPC_APP_RELAUNCH,
     IPC_RESET_WINDOW_STATES,
@@ -16,10 +17,16 @@ import { resetComposeState } from "../windows/compose";
 
 export function registerSystemIpc(markQuitting: () => void): void {
     ipcMain.handle(IPC_UPDATE_CHECK, async () => {
-        await manualCheck((version) => {
-            const pw = getPrefsWindow();
-            if (pw && !pw.isDestroyed()) pw.webContents.send(IPC_UPDATE_DOWNLOADING, version);
-        });
+        await manualCheck(
+            (version) => {
+                const pw = getPrefsWindow();
+                if (pw && !pw.isDestroyed()) pw.webContents.send(IPC_UPDATE_DOWNLOADING, version);
+            },
+            (version) => {
+                const pw = getPrefsWindow();
+                if (pw && !pw.isDestroyed()) pw.webContents.send(IPC_UPDATE_READY, version);
+            },
+        );
     });
 
     ipcMain.handle(IPC_UPDATE_INSTALL, () => {
