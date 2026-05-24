@@ -5,9 +5,15 @@ import Findbar from "electron-findbar";
 import { isDev } from "../core/env";
 import { logger } from "../core/logger";
 import { getPref } from "../core/store";
-import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS, clampToDisplays, type WindowState } from "./shared";
+import {
+    PRELOAD_GMAIL,
+    TITLEBAR_HEIGHT,
+    openExternal,
+    GMAIL_ALLOWED_HOSTS,
+    clampToDisplays,
+    type WindowState,
+} from "./shared";
 
-const TITLEBAR_HEIGHT = 32;
 const WINDOW_DEFAULTS: WindowState = { width: 1200, height: 800 };
 const PRELOAD_TITLEBAR = path.join(__dirname, "../preload/titlebar.js");
 
@@ -167,9 +173,10 @@ function loadWindowState(): WindowState {
     }
 }
 
-function saveWindowState(win: BrowserWindow): void {
-    if (win.isMinimized() || win.isFullScreen()) return;
-    const bounds = win.getBounds();
+export function saveWindowState(): void {
+    if (!_gmailWindow || _gmailWindow.isDestroyed()) return;
+    if (_gmailWindow.isMinimized() || _gmailWindow.isFullScreen()) return;
+    const bounds = _gmailWindow.getBounds();
     try {
         writeFileSync(_windowStatePath, JSON.stringify(bounds, null, 4));
     } catch (e) {
@@ -305,7 +312,7 @@ export function createGmailWindow(windowStatePath: string, isQuitting: () => boo
 
     // Hide on close so the Gmail session (cookies, service workers) stays alive; Cmd+Q still quits.
     win.on("close", (event) => {
-        saveWindowState(win);
+        saveWindowState();
         if (!isQuitting()) {
             event.preventDefault();
             win.hide();
@@ -320,6 +327,13 @@ export function createGmailWindow(windowStatePath: string, isQuitting: () => boo
         if (_titlebarView && !_titlebarView.webContents.isDestroyed()) {
             _titlebarView.setBounds({ x: 0, y: 0, width: w, height: TITLEBAR_HEIGHT });
         }
+    });
+
+    win.on("resized", () => {
+        saveWindowState();
+    });
+    win.on("moved", () => {
+        saveWindowState();
     });
 
     _gmailWindow = win;
