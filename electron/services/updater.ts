@@ -39,12 +39,27 @@ export function checkForUpdates(onReady: (version: string) => void, onDownloadin
     });
 }
 
-export async function manualCheck(onDownloading: (version: string) => void): Promise<void> {
+export async function manualCheck(
+    onDownloading: (version: string) => void,
+    onReady: (version: string) => void,
+): Promise<void> {
     if (isDev) return;
+
+    // Update already downloaded in this session — report it immediately.
+    if (pendingVersion !== null) {
+        onReady(pendingVersion);
+        return;
+    }
+
     autoUpdater.autoDownload = true;
+    autoUpdater.autoInstallOnAppQuit = true;
     autoUpdater.removeAllListeners("update-available");
     autoUpdater.once("update-available", (info: UpdateInfo) => {
         onDownloading(info.version);
+    });
+    autoUpdater.once("update-downloaded", (info: UpdateInfo) => {
+        pendingVersion = info.version;
+        onReady(info.version);
     });
     try {
         await autoUpdater.checkForUpdates();
@@ -59,17 +74,24 @@ export function installUpdate(): void {
         return;
     }
 
-    // Squirrel.Mac rejects updates signed with a different identity than the running app.
-    // Fall back to a shell script installer when that happens.
-    const onSignatureError = (err: Error): void => {
-        if (err.message.includes("Code signature") || err.message.includes("code failed to satisfy")) {
-            autoUpdater.removeListener("error", onSignatureError);
-            installUpdateMac();
-        }
+    const mu = autoUpdater as unknown as Record<string, unknown>;
+
+    // If Squirrel hasn't staged the update yet, skip the native path entirely.
+    if (!mu.squirrelDownloadedUpdate) {
+        logger.info("[updater] Squirrel update not staged, using fallback installer");
+        installUpdateMac();
+        return;
+    }
+
+    // Squirrel has the update staged. Try the native path; fall back on any error.
+    const onError = (err: Error): void => {
+        autoUpdater.removeListener("error", onError);
+        logger.warn("[updater] Squirrel quitAndInstall failed, using fallback:", err.message);
+        installUpdateMac();
     };
 
-    autoUpdater.on("error", onSignatureError);
-    setTimeout(() => autoUpdater.removeListener("error", onSignatureError), 15_000);
+    autoUpdater.on("error", onError);
+    setTimeout(() => autoUpdater.removeListener("error", onError), 15_000);
 
     autoUpdater.quitAndInstall(false, true);
 }
