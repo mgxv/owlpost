@@ -12,6 +12,7 @@ import {
     openExternal,
     GMAIL_ALLOWED_HOSTS,
     clampToDisplays,
+    attachContextMenu,
     type WindowState,
 } from "./shared";
 import { extractAccount } from "./window-url";
@@ -278,6 +279,8 @@ export function createGmailWindow(windowStatePath: string, isQuitting: () => boo
             pushTitlebarState(gmailView.webContents);
         });
     }
+
+    attachContextMenu(gmailView.webContents, win);
 
     // ── Titlebar view (macOS only) ────────────────────────────────────────────
     if (isMac) {

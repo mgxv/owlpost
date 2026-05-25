@@ -2,7 +2,14 @@ import { app, BrowserWindow } from "electron";
 import { readFileSync, writeFileSync, unlinkSync } from "fs";
 import path from "path";
 import { getCurrentZoom } from "./gmail";
-import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS, clampToDisplays, type WindowState } from "./shared";
+import {
+    PRELOAD_GMAIL,
+    openExternal,
+    GMAIL_ALLOWED_HOSTS,
+    clampToDisplays,
+    attachContextMenu,
+    type WindowState,
+} from "./shared";
 import { parseMailtoUrl } from "./window-url";
 import { logger } from "../core/logger";
 
@@ -107,6 +114,8 @@ export function openCompose(mailtoUrl?: string): void {
         openExternal(popupUrl);
         return { action: "deny" };
     });
+
+    attachContextMenu(win.webContents, win);
 
     win.on("close", () => {
         saveComposeState(win);
