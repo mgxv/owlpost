@@ -1,35 +1,23 @@
 /// <reference path="./global.d.ts" />
+import { isInboxListView, extractUnreadCount, looksLikeUnknownCount, redactEmail } from "./title-parser";
+
 (function () {
     try {
         if (!window.__owlpost__) return;
         const owl = window.__owlpost__;
 
         owl.onReady(() => {
-            const EMAIL_RE = /[\w.+-]+@[\w.-]+\.[a-z]{2,}/i;
-            const UNREAD_RE = /\(([\d,]+)\)/;
-
-            function isInboxListView(): boolean {
-                const h = location.hash || "";
-                if (h === "" || h === "#" || h === "#inbox") return true;
-                if (h.startsWith("#inbox?")) return true;
-                return /^#inbox\/p\d+(?:\?|$)/.test(h);
-            }
-
             let lastCount = -1;
             let warnedFormat = false;
 
             function readCount(): number | null {
-                if (!isInboxListView()) return null;
+                if (!isInboxListView(location.hash || "")) return null;
                 const title = document.title || "";
-                const m = title.match(UNREAD_RE);
-                if (m) {
-                    const [, value = "0"] = m;
-                    const n = parseInt(value.replace(/,/g, ""), 10);
-                    return Number.isNaN(n) ? 0 : n;
-                }
-                if (!warnedFormat && /\d/.test(title.replace(EMAIL_RE, ""))) {
+                const n = extractUnreadCount(title);
+                if (n !== null) return n;
+                if (!warnedFormat && looksLikeUnknownCount(title)) {
                     warnedFormat = true;
-                    owl.emit("title-format-unknown", title.replace(EMAIL_RE, "<email>"));
+                    owl.emit("title-format-unknown", redactEmail(title));
                 }
                 return 0;
             }

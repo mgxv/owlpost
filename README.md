@@ -85,6 +85,7 @@ owlpost/
 │
 ├── injected/                         Scripts injected into Gmail's webContents at runtime
 │   ├── global.d.ts                   Type declarations for window.__owlpost__
+│   ├── title-parser.ts              Pure unread-count / inbox-view parsing helpers (unit-tested)
 │   ├── title-watcher.ts              Reads unread count from the page title
 │   └── notifications.ts              Intercepts Gmail's Notification constructor
 │
@@ -111,7 +112,7 @@ owlpost/
 ├── electron-builder.yml              Distribution config (DMG + ZIP, GitHub releases)
 ├── tsconfig.json                     Renderer TypeScript config
 ├── tsconfig.node.json                Main-process TypeScript config (CommonJS output)
-├── tsconfig.injected.json            Injected-script TypeScript config (no module system)
+├── tsconfig.injected.json            Injected-script TypeScript config (type-check; esbuild bundles to IIFE)
 └── tsconfig.preload.json             Preload TypeScript config (type-check only, noEmit)
 ```
 
@@ -196,7 +197,7 @@ electron-store v11 is ESM-only. Because the main process compiles to CommonJS (`
 
 ### Injected scripts
 
-Scripts in `injected/` are compiled with `module: "none"` (no module system) and executed inside Gmail's webContents via `webContents.executeJavaScript`. They use `window.__owlpost__.onReady()` instead of `DOMContentLoaded` because injection happens after `did-finish-load`, which fires after the DOM is already ready.
+Scripts in `injected/` are bundled by esbuild (`--bundle --format=iife`, mirroring the preload build) into self-contained IIFEs and executed inside Gmail's webContents via `webContents.executeJavaScript`. Bundling lets the entry scripts import shared pure helpers (e.g. `title-parser.ts`) that are unit-tested in isolation, while the emitted output stays a single dependency-free script per entry. They use `window.__owlpost__.onReady()` instead of `DOMContentLoaded` because injection happens after `did-finish-load`, which fires after the DOM is already ready.
 
 </details>
 

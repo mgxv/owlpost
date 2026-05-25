@@ -8,26 +8,12 @@ import {
     IPC_NOTIF_PERMISSION_GET,
 } from "../core/constants";
 import { getPrefs, setPref, DEFAULTS, type Prefs } from "../core/store";
+import { isValidPrefValue } from "../core/prefs-validation";
 import { applyBadge } from "../services/badge";
 import { applyLaunchAtLogin, isLaunchAtLoginEnabled } from "../services/launch-at-login";
 import { applyNativeTheme } from "../services/theme";
 import { zoomReset } from "../windows/gmail";
 import { getPrefsWindow } from "../windows/prefs";
-
-// Guards against a compromised renderer sending arbitrary pref values.
-function isValidPrefValue(key: keyof Prefs, value: unknown): boolean {
-    switch (key) {
-        case "systemTheme":
-            return value === "light" || value === "dark" || value === "system";
-        case "defaultZoom":
-            return typeof value === "number" && Number.isFinite(value) && value >= 50 && value <= 150;
-        case "showDockBadge":
-        case "launchAtStartup":
-        case "crashReporting":
-        case "notificationsEnabled":
-            return typeof value === "boolean";
-    }
-}
 
 export function registerPrefsIpc(): void {
     ipcMain.handle(IPC_PREFS_GET, () => getPrefs());

@@ -13,6 +13,7 @@ import {
     clampToDisplays,
     type WindowState,
 } from "./shared";
+import { extractAccount } from "./window-url";
 
 const WINDOW_DEFAULTS: WindowState = { width: 1200, height: 800 };
 const PRELOAD_TITLEBAR = path.join(__dirname, "../preload/titlebar.js");
@@ -82,14 +83,6 @@ let _currentZoom = 100;
 let _windowStatePath = "";
 let _currentAccount: string | null = null;
 let _lastTitlebarKey: string | null = null;
-
-function extractAccount(url: string): string | null {
-    try {
-        return new URL(url).pathname.match(/^\/mail\/u\/(\d+)/)?.[1] ?? null;
-    } catch {
-        return null;
-    }
-}
 
 function pushTitlebarState(wc: WebContents): void {
     if (!_titlebarView || _titlebarView.webContents.isDestroyed()) return;

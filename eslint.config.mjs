@@ -39,8 +39,8 @@ export default tseslint.config(
     },
 
     {
-        // injected scripts compile with `module: "none"` — ES import statements are
-        // illegal, so /// <reference path> is the only way to pull in type declarations.
+        // injected scripts are bundled to an IIFE by esbuild, so ES imports between
+        // them are fine; /// <reference path> still pulls in ambient window globals.
         files: ["injected/**/*.ts"],
         rules: {
             "@typescript-eslint/triple-slash-reference": ["error", { path: "always" }],

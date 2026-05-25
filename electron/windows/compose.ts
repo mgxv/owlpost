@@ -3,17 +3,10 @@ import { readFileSync, writeFileSync, unlinkSync } from "fs";
 import path from "path";
 import { getCurrentZoom } from "./gmail";
 import { PRELOAD_GMAIL, openExternal, GMAIL_ALLOWED_HOSTS, clampToDisplays, type WindowState } from "./shared";
+import { parseMailtoUrl } from "./window-url";
 import { logger } from "../core/logger";
 
 const BLANK_COMPOSE_URL = "https://mail.google.com/mail/?view=cm&fs=1";
-
-// extsrc=mailto tells Gmail to parse the full URI itself (recipient, subject, body).
-function parseMailtoUrl(mailtoUrl: string): string {
-    const compose = new URL("https://mail.google.com/mail/");
-    compose.searchParams.set("extsrc", "mailto");
-    compose.searchParams.set("url", mailtoUrl);
-    return compose.toString();
-}
 
 const COMPOSE_DEFAULTS: WindowState = { width: 900, height: 700 };
 
