@@ -47,11 +47,26 @@ export function attachContextMenu(wc: WebContents, win: BrowserWindow): void {
         const flags = params.editFlags;
         const sections: MenuItemConstructorOptions[][] = [];
 
+        // Look Up (the macOS dictionary panel) sits at the top whenever text is selected.
+        if (process.platform === "darwin" && params.selectionText.trim().length > 0) {
+            sections.push([
+                {
+                    label: "Look Up",
+                    click: () => {
+                        wc.showDefinitionForSelection();
+                    },
+                },
+            ]);
+        }
+
+        // accelerator is display-only (registerAccelerator: false); the app menu owns the real shortcuts.
         if (params.isEditable) {
             sections.push(
                 [
                     {
                         label: "Undo",
+                        accelerator: "CmdOrCtrl+Z",
+                        registerAccelerator: false,
                         enabled: flags.canUndo,
                         click: () => {
                             wc.undo();
@@ -59,6 +74,8 @@ export function attachContextMenu(wc: WebContents, win: BrowserWindow): void {
                     },
                     {
                         label: "Redo",
+                        accelerator: "Shift+CmdOrCtrl+Z",
+                        registerAccelerator: false,
                         enabled: flags.canRedo,
                         click: () => {
                             wc.redo();
@@ -68,6 +85,8 @@ export function attachContextMenu(wc: WebContents, win: BrowserWindow): void {
                 [
                     {
                         label: "Cut",
+                        accelerator: "CmdOrCtrl+X",
+                        registerAccelerator: false,
                         enabled: flags.canCut,
                         click: () => {
                             wc.cut();
@@ -75,6 +94,8 @@ export function attachContextMenu(wc: WebContents, win: BrowserWindow): void {
                     },
                     {
                         label: "Copy",
+                        accelerator: "CmdOrCtrl+C",
+                        registerAccelerator: false,
                         enabled: flags.canCopy,
                         click: () => {
                             wc.copy();
@@ -82,15 +103,28 @@ export function attachContextMenu(wc: WebContents, win: BrowserWindow): void {
                     },
                     {
                         label: "Paste",
+                        accelerator: "CmdOrCtrl+V",
+                        registerAccelerator: false,
                         enabled: flags.canPaste,
                         click: () => {
                             wc.paste();
+                        },
+                    },
+                    {
+                        label: "Paste and Match Style",
+                        accelerator: "Shift+CmdOrCtrl+V",
+                        registerAccelerator: false,
+                        enabled: flags.canPaste,
+                        click: () => {
+                            wc.pasteAndMatchStyle();
                         },
                     },
                 ],
                 [
                     {
                         label: "Select All",
+                        accelerator: "CmdOrCtrl+A",
+                        registerAccelerator: false,
                         enabled: flags.canSelectAll,
                         click: () => {
                             wc.selectAll();
@@ -102,6 +136,8 @@ export function attachContextMenu(wc: WebContents, win: BrowserWindow): void {
             sections.push([
                 {
                     label: "Copy",
+                    accelerator: "CmdOrCtrl+C",
+                    registerAccelerator: false,
                     enabled: flags.canCopy,
                     click: () => {
                         wc.copy();
@@ -109,6 +145,8 @@ export function attachContextMenu(wc: WebContents, win: BrowserWindow): void {
                 },
                 {
                     label: "Select All",
+                    accelerator: "CmdOrCtrl+A",
+                    registerAccelerator: false,
                     enabled: flags.canSelectAll,
                     click: () => {
                         wc.selectAll();
