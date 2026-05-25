@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Prefs } from "./preload.d";
+import { DEFAULTS } from "../electron/core/prefs";
 
 export type SystemTheme = Prefs["systemTheme"];
 
@@ -13,12 +14,12 @@ type UsePreferences = Prefs & {
 };
 
 export function usePreferences(): UsePreferences {
-    const [systemTheme, setSystemThemeState] = useState<SystemTheme>("system");
-    const [defaultZoom, setDefaultZoomState] = useState(100);
-    const [showDockBadge, setShowDockBadgeState] = useState(true);
-    const [launchAtStartup, setLaunchAtStartupState] = useState(false);
-    const [crashReporting, setCrashReportingState] = useState(false);
-    const [notificationsEnabled, setNotificationsEnabledState] = useState(false);
+    const [systemTheme, setSystemThemeState] = useState<SystemTheme>(DEFAULTS.systemTheme);
+    const [defaultZoom, setDefaultZoomState] = useState(DEFAULTS.defaultZoom);
+    const [showDockBadge, setShowDockBadgeState] = useState(DEFAULTS.showDockBadge);
+    const [launchAtStartup, setLaunchAtStartupState] = useState(DEFAULTS.launchAtStartup);
+    const [crashReporting, setCrashReportingState] = useState(DEFAULTS.crashReporting);
+    const [notificationsEnabled, setNotificationsEnabledState] = useState(DEFAULTS.notificationsEnabled);
     useEffect(() => {
         let cancelled = false as boolean;
 

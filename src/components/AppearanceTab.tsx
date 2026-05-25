@@ -1,7 +1,6 @@
 import { isDev } from "../env";
 import type { SystemTheme } from "../usePreferences";
-
-const ZOOM_OPTIONS = [80, 85, 90, 95, 100, 105, 110, 115, 120] as const;
+import { ZOOM_OPTIONS } from "../../electron/core/prefs";
 
 interface Props {
     systemTheme: SystemTheme;

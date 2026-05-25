@@ -5,6 +5,7 @@ import Findbar from "electron-findbar";
 import { isDev } from "../core/env";
 import { logger } from "../core/logger";
 import { getPref } from "../core/store";
+import { ZOOM_MIN, ZOOM_MAX, ZOOM_STEP } from "../core/prefs";
 import {
     PRELOAD_GMAIL,
     TITLEBAR_HEIGHT,
@@ -71,10 +72,6 @@ async function injectGmailScripts(wc: WebContents): Promise<void> {
         logger.error("[inject] executeJavaScript:", e);
     }
 }
-
-const ZOOM_STEP = 5;
-const ZOOM_MIN = 80;
-const ZOOM_MAX = 120;
 
 let _gmailWindow: BrowserWindow | null = null;
 let _gmailView: WebContentsView | null = null;

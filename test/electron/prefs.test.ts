@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isValidPrefValue } from "../../electron/core/prefs-validation";
+import { isValidPrefValue, ZOOM_OPTIONS, ZOOM_MIN, ZOOM_MAX, ZOOM_STEP } from "../../electron/core/prefs";
 
 describe("isValidPrefValue", () => {
     describe("systemTheme", () => {
@@ -13,13 +13,11 @@ describe("isValidPrefValue", () => {
     });
 
     describe("defaultZoom", () => {
-        // Note: the validator's accepted range (50–150) is intentionally wider than
-        // the UI options (80–120) and the runtime clamp in windows/gmail.ts.
-        it.each([50, 80, 100, 120, 150])("accepts in-range %i", (v) => {
+        it.each([80, 100, 120])("accepts in-range %i", (v) => {
             expect(isValidPrefValue("defaultZoom", v)).toBe(true);
         });
 
-        it.each([49, 151, 0, -100, 1000])("rejects out-of-range %i", (v) => {
+        it.each([79, 121, 50, 150, 0, -100])("rejects out-of-range %i", (v) => {
             expect(isValidPrefValue("defaultZoom", v)).toBe(false);
         });
 
@@ -40,4 +38,24 @@ describe("isValidPrefValue", () => {
             });
         },
     );
+});
+
+describe("zoom bounds are a single source of truth", () => {
+    it("derives ZOOM_OPTIONS from the bounds and step", () => {
+        expect(ZOOM_OPTIONS).toEqual([80, 85, 90, 95, 100, 105, 110, 115, 120]);
+        expect(ZOOM_OPTIONS[0]).toBe(ZOOM_MIN);
+        expect(ZOOM_OPTIONS[ZOOM_OPTIONS.length - 1]).toBe(ZOOM_MAX);
+        expect(ZOOM_STEP).toBeGreaterThan(0);
+    });
+
+    it("accepts every dropdown option as a valid defaultZoom", () => {
+        for (const z of ZOOM_OPTIONS) {
+            expect(isValidPrefValue("defaultZoom", z)).toBe(true);
+        }
+    });
+
+    it("rejects values just outside the bounds the UI offers", () => {
+        expect(isValidPrefValue("defaultZoom", ZOOM_MIN - 1)).toBe(false);
+        expect(isValidPrefValue("defaultZoom", ZOOM_MAX + 1)).toBe(false);
+    });
 });

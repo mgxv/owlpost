@@ -1,20 +1,7 @@
-export interface Prefs {
-    systemTheme: "light" | "dark" | "system";
-    defaultZoom: number;
-    showDockBadge: boolean;
-    launchAtStartup: boolean;
-    crashReporting: boolean;
-    notificationsEnabled: boolean;
-}
+import { DEFAULTS, type Prefs } from "./prefs";
 
-export const DEFAULTS: Prefs = {
-    systemTheme: "system",
-    defaultZoom: 100,
-    showDockBadge: true,
-    launchAtStartup: false,
-    crashReporting: false,
-    notificationsEnabled: false,
-};
+export { DEFAULTS };
+export type { Prefs };
 
 let _store: {
     get<K extends keyof Prefs>(key: K): Prefs[K];
