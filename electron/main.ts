@@ -1,10 +1,11 @@
-import { app, crashReporter, Menu, session } from "electron";
+import { app, Menu, session } from "electron";
 import path from "path";
 import { mkdirSync } from "fs";
 import { logger } from "./core/logger";
 import { initStore, getPref } from "./core/store";
 import { applyNativeTheme } from "./services/theme";
 import { applyLaunchAtLogin } from "./services/launch-at-login";
+import { startCrashReporter } from "./services/crash-reporting";
 import { checkForUpdates } from "./services/updater";
 import { registerGmailIpc } from "./ipc/gmail";
 import { registerPrefsIpc } from "./ipc/prefs";
@@ -80,9 +81,7 @@ void app.whenReady().then(async () => {
 
     await initStore();
 
-    if (process.env.SENTRY_DSN && getPref("crashReporting")) {
-        crashReporter.start({ submitURL: process.env.SENTRY_DSN });
-    }
+    if (getPref("crashReporting")) startCrashReporter();
 
     const ua = session.defaultSession
         .getUserAgent()
