@@ -58,6 +58,7 @@ owlpost/
 │   │   ├── constants.ts              All IPC channel names and URL constants
 │   │   ├── env.ts                    isDev flag — true when app.isPackaged is false
 │   │   ├── logger.ts                 electron-log wrapper (file + conditional console output)
+│   │   ├── prefs.ts                  Source of truth — Prefs shape, DEFAULTS, zoom bounds, validation (shared with renderer)
 │   │   └── store.ts                  electron-store wrapper — typed preference persistence
 │   │
 │   ├── windows/                      BrowserWindow factories and lifecycle management
@@ -188,6 +189,7 @@ All preference channel names live in `core/constants.ts` — no raw strings appe
 
 - `main.ts` is the only file at the root of `electron/` — everything else lives in a subdirectory.
 - `core/constants.ts` and `core/logger.ts` may be imported by anything; nothing imports from `main.ts`.
+- `core/prefs.ts` is the single source of truth for the preferences shape, defaults, and zoom bounds. It is pure (no electron imports) so the renderer imports it too; `store.ts` re-exports `Prefs`/`DEFAULTS` for persistence callers.
 - Window references are exposed via getter functions (`getGmailWindow()`, `getPrefsWindow()`) — no exported mutable variables.
 - `logger` replaces every `console.*` call in the main process.
 

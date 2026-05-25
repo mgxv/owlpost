@@ -7,8 +7,8 @@ import {
     IPC_CRASH_REPORTING_AVAIL,
     IPC_NOTIF_PERMISSION_GET,
 } from "../core/constants";
-import { getPrefs, setPref, DEFAULTS, type Prefs } from "../core/store";
-import { isValidPrefValue } from "../core/prefs-validation";
+import { getPrefs, setPref } from "../core/store";
+import { DEFAULTS, isValidPrefValue, type Prefs } from "../core/prefs";
 import { applyBadge } from "../services/badge";
 import { applyLaunchAtLogin, isLaunchAtLoginEnabled } from "../services/launch-at-login";
 import { applyNativeTheme } from "../services/theme";

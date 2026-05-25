@@ -1,11 +1,5 @@
-export interface Prefs {
-    systemTheme: "light" | "dark" | "system";
-    defaultZoom: number;
-    showDockBadge: boolean;
-    launchAtStartup: boolean;
-    crashReporting: boolean;
-    notificationsEnabled: boolean;
-}
+import type { Prefs } from "../electron/core/prefs";
+export type { Prefs };
 
 type UnsubFn = () => void;
 
