@@ -26,6 +26,7 @@ interface OwlpostAPI {
         relaunch: () => Promise<void>;
         resetWindowStates: () => Promise<void>;
     };
+    log: (level: "warn" | "error", message: string, detail?: string) => void;
 }
 
 declare global {

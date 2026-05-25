@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Prefs } from "./preload.d";
 import { DEFAULTS } from "../electron/core/prefs";
+import { log } from "./log";
 
 export type SystemTheme = Prefs["systemTheme"];
 
@@ -66,7 +67,7 @@ export function usePreferences(): UsePreferences {
                 setCrashReportingState(prefs.crashReporting);
                 setNotificationsEnabledState(prefs.notificationsEnabled);
             } catch (e) {
-                console.error("Failed to load preferences:", e);
+                log.error("Failed to load preferences", e);
             }
         })();
 

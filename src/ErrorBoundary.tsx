@@ -1,4 +1,5 @@
 import React from "react";
+import { log } from "./log";
 
 interface State {
     error: Error | null;
@@ -12,7 +13,7 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
     }
 
     override componentDidCatch(error: Error, info: React.ErrorInfo): void {
-        console.error("[ErrorBoundary]", error, info.componentStack);
+        log.error(`[ErrorBoundary] ${error.message}`, info.componentStack ?? error.stack);
     }
 
     override render() {
