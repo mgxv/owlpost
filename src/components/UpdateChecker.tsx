@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { log } from "../log";
 
 type UpdateState =
     | { status: "idle" }
@@ -21,7 +22,7 @@ export default function UpdateChecker() {
                 if (!cancelled && version) setState({ status: "ready", version });
             })
             .catch((e: unknown) => {
-                console.warn("[update] pendingVersion check failed:", e);
+                log.warn("[update] pendingVersion check failed", e);
             });
 
         // Background download started (auto-check on startup, or manual check found an update).

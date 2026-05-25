@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
+import { IPC_RENDERER_LOG } from "../core/constants";
 
 type NavState = { canGoBack: boolean; canGoForward: boolean; title: string };
 
@@ -21,5 +22,8 @@ contextBridge.exposeInMainWorld("tb", {
         };
         ipcRenderer.on("tb:update", listener);
         return () => ipcRenderer.off("tb:update", listener);
+    },
+    log(level: "warn" | "error", message: string, detail?: string): void {
+        ipcRenderer.send(IPC_RENDERER_LOG, { source: "titlebar", level, message, detail });
     },
 });

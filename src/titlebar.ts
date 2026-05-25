@@ -1,6 +1,7 @@
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { ArrowLongLeftIcon, ArrowLongRightIcon, Cog6ToothIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { createRendererLog, installGlobalHandlers } from "./log";
 
 declare global {
     interface Window {
@@ -10,9 +11,12 @@ declare global {
             openPrefs(): void;
             openFind(): void;
             onUpdate(fn: (s: { canGoBack: boolean; canGoForward: boolean; title: string }) => void): () => void;
+            log: (level: "warn" | "error", message: string, detail?: string) => void;
         };
     }
 }
+
+installGlobalHandlers(createRendererLog(window.tb.log));
 
 const back = document.getElementById("back") as HTMLButtonElement;
 const fwd = document.getElementById("fwd") as HTMLButtonElement;

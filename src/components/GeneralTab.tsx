@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import NotificationsSetupDialog from "./NotificationsSetupDialog";
 import UpdateChecker from "./UpdateChecker";
+import { log } from "../log";
 
 interface Props {
     notificationsEnabled: boolean;
@@ -29,7 +30,7 @@ export default function GeneralTab({
                 if (!granted) setNotificationsEnabled(false);
             })
             .catch((e: unknown) => {
-                console.warn("[prefs] notificationPermission check failed:", e);
+                log.warn("[prefs] notificationPermission check failed", e);
             });
     }, [notificationsEnabled, setNotificationsEnabled]);
 

@@ -15,6 +15,7 @@ import {
     IPC_APP_RESET,
     IPC_APP_RELAUNCH,
     IPC_RESET_WINDOW_STATES,
+    IPC_RENDERER_LOG,
 } from "../core/constants";
 
 type UnsubFn = () => void;
@@ -68,5 +69,9 @@ contextBridge.exposeInMainWorld("owlpost", {
         reset: () => ipcRenderer.invoke(IPC_APP_RESET),
         relaunch: () => ipcRenderer.invoke(IPC_APP_RELAUNCH),
         resetWindowStates: () => ipcRenderer.invoke(IPC_RESET_WINDOW_STATES),
+    },
+
+    log: (level: "warn" | "error", message: string, detail?: string): void => {
+        ipcRenderer.send(IPC_RENDERER_LOG, { source: "prefs", level, message, detail });
     },
 });

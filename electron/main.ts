@@ -10,6 +10,7 @@ import { checkForUpdates } from "./services/updater";
 import { registerGmailIpc } from "./ipc/gmail";
 import { registerPrefsIpc } from "./ipc/prefs";
 import { registerSystemIpc } from "./ipc/system";
+import { registerLogIpc } from "./ipc/log";
 import {
     createGmailWindow,
     showGmailWindow,
@@ -96,6 +97,7 @@ void app.whenReady().then(async () => {
     registerGmailIpc();
     registerPrefsIpc();
     registerSystemIpc(markQuitting);
+    registerLogIpc();
 
     setupPrefs(() => isQuitting);
     createGmailWindow(windowStatePath, () => isQuitting);

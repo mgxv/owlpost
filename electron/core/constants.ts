@@ -13,3 +13,4 @@ export const IPC_UPDATE_READY = "owlpost:update:ready";
 export const IPC_APP_RESET = "owlpost:app:reset";
 export const IPC_APP_RELAUNCH = "owlpost:app:relaunch";
 export const IPC_RESET_WINDOW_STATES = "owlpost:app:reset-window-states";
+export const IPC_RENDERER_LOG = "owlpost:renderer-log";
