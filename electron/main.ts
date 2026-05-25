@@ -123,10 +123,10 @@ void app.whenReady().then(async () => {
     setTimeout(() => {
         checkForUpdates(
             (version) => {
-                sendToPrefs(IPC_UPDATE_READY, version);
+                sendToPrefs(IPC_UPDATE_DOWNLOADING, version);
             },
             (version) => {
-                sendToPrefs(IPC_UPDATE_DOWNLOADING, version);
+                sendToPrefs(IPC_UPDATE_READY, version);
             },
         );
     }, 20_000);

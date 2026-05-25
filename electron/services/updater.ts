@@ -14,7 +14,7 @@ export function getPendingVersion(): string | null {
     return pendingVersion;
 }
 
-export function checkForUpdates(onReady: (version: string) => void, onDownloading: (version: string) => void): void {
+export function checkForUpdates(onDownloading: (version: string) => void, onReady: (version: string) => void): void {
     if (isDev) return;
 
     autoUpdater.autoDownload = true;
