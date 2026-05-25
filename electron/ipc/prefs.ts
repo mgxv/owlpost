@@ -1,4 +1,4 @@
-import { ipcMain, Notification, crashReporter } from "electron";
+import { ipcMain, Notification } from "electron";
 import {
     IPC_PREFS_GET,
     IPC_PREFS_SET,
@@ -12,6 +12,7 @@ import { isValidPrefValue } from "../core/prefs-validation";
 import { applyBadge } from "../services/badge";
 import { applyLaunchAtLogin, isLaunchAtLoginEnabled } from "../services/launch-at-login";
 import { applyNativeTheme } from "../services/theme";
+import { startCrashReporter, isCrashReportingAvailable } from "../services/crash-reporting";
 import { zoomReset } from "../windows/gmail";
 import { getPrefsWindow } from "../windows/prefs";
 
@@ -29,16 +30,14 @@ export function registerPrefsIpc(): void {
         if (key === "defaultZoom") zoomReset();
         if (key === "showDockBadge") applyBadge(value as boolean);
         if (key === "launchAtStartup") applyLaunchAtLogin(value as boolean);
-        if (key === "crashReporting" && value === true && process.env.SENTRY_DSN) {
-            crashReporter.start({ submitURL: process.env.SENTRY_DSN });
-        }
+        if (key === "crashReporting" && value === true) startCrashReporter();
 
         getPrefsWindow()?.webContents.send(IPC_PREFS_CHANGED, { key, value });
     });
 
     ipcMain.handle(IPC_LAUNCH_AT_LOGIN_GET, () => isLaunchAtLoginEnabled());
 
-    ipcMain.handle(IPC_CRASH_REPORTING_AVAIL, () => Boolean(process.env.SENTRY_DSN));
+    ipcMain.handle(IPC_CRASH_REPORTING_AVAIL, () => isCrashReportingAvailable());
 
     ipcMain.handle(IPC_NOTIF_PERMISSION_GET, () => Notification.isSupported());
 }

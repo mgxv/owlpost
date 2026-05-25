@@ -58,7 +58,13 @@ jobs:
                   SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
               run: |
                   if [[ -z "$CSC_LINK" ]]; then unset CSC_LINK CSC_KEY_PASSWORD; fi
-                  npx electron-builder --mac --arm64 --x64 --publish never
+                  # Bake the DSN into the shipped package.json; a runtime env lookup
+                  # would be undefined in a GUI-launched app.
+                  if [[ -n "${SENTRY_DSN:-}" ]]; then
+                      npx electron-builder --mac --arm64 --x64 -c.extraMetadata.sentryDsn="$SENTRY_DSN" --publish never
+                  else
+                      npx electron-builder --mac --arm64 --x64 --publish never
+                  fi
 
             - name: Verify bundle outputs
               run: |
