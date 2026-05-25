@@ -4,9 +4,10 @@ import { getPref } from "../core/store";
 import { isDev } from "../core/env";
 
 const PRELOAD_PREFS = path.join(__dirname, "../preload/prefs.js");
-// Match App.tsx: bg-neutral-900 / bg-neutral-100
-const BG_DARK = "#171717";
-const BG_LIGHT = "#f5f5f5";
+// Native window background, applied before the renderer paints to avoid a flash. Keep in
+// sync with App.tsx's root background; Tailwind isn't reachable from the main process.
+const BG_DARK = "#171717"; // Tailwind neutral-900 (bg-neutral-900)
+const BG_LIGHT = "#f5f5f5"; // Tailwind neutral-100 (bg-neutral-100)
 
 let _prefsWindow: BrowserWindow | null = null;
 let _ready = false;
