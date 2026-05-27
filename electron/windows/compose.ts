@@ -111,7 +111,25 @@ export function openCompose(mailtoUrl?: string): void {
     });
 
     win.webContents.setWindowOpenHandler(({ url: popupUrl }) => {
-        openExternal(popupUrl);
+        try {
+            const host = new URL(popupUrl).hostname;
+            if (GMAIL_ALLOWED_HOSTS.has(host)) {
+                return {
+                    action: "allow",
+                    overrideBrowserWindowOptions: {
+                        webPreferences: {
+                            preload: PRELOAD_GMAIL,
+                            contextIsolation: true,
+                            sandbox: true,
+                            nodeIntegration: false,
+                        },
+                    },
+                };
+            }
+            openExternal(popupUrl);
+        } catch (e) {
+            logger.debug("[compose] setWindowOpenHandler — malformed URL:", e);
+        }
         return { action: "deny" };
     });
 

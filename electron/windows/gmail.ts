@@ -180,10 +180,19 @@ function attachNavigationHandlers(wc: WebContents): void {
         try {
             const host = new URL(url).hostname;
             if (GMAIL_ALLOWED_HOSTS.has(host)) {
-                void wc.loadURL(url);
-            } else {
-                openExternal(url);
+                return {
+                    action: "allow",
+                    overrideBrowserWindowOptions: {
+                        webPreferences: {
+                            preload: PRELOAD_GMAIL,
+                            contextIsolation: true,
+                            sandbox: true,
+                            nodeIntegration: false,
+                        },
+                    },
+                };
             }
+            openExternal(url);
         } catch (e) {
             logger.debug("[gmail] setWindowOpenHandler — malformed URL:", e);
         }
