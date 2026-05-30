@@ -16,14 +16,11 @@ export async function initStore(): Promise<void> {
 }
 
 export function getPrefs(): Prefs {
-    return {
-        systemTheme: _store.get("systemTheme"),
-        defaultZoom: _store.get("defaultZoom"),
-        showDockBadge: _store.get("showDockBadge"),
-        launchAtStartup: _store.get("launchAtStartup"),
-        crashReporting: _store.get("crashReporting"),
-        notificationsEnabled: _store.get("notificationsEnabled"),
-    };
+    const prefs = {} as Prefs;
+    for (const key of Object.keys(DEFAULTS) as (keyof Prefs)[]) {
+        prefs[key] = _store.get(key) as never;
+    }
+    return prefs;
 }
 
 export function getPref<K extends keyof Prefs>(key: K): Prefs[K] {
