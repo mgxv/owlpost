@@ -9,30 +9,40 @@ import { logger } from "../core/logger";
 import { saveWindowState } from "../windows/gmail";
 
 let pendingVersion: string | null = null;
+let listenersBound = false;
+let onDownloadingCb: (version: string) => void = () => {};
+let onReadyCb: (version: string) => void = () => {};
 
 export function getPendingVersion(): string | null {
     return pendingVersion;
 }
 
-export function checkForUpdates(onDownloading: (version: string) => void, onReady: (version: string) => void): void {
-    if (isDev) return;
+// Bind the autoUpdater event handlers once; callbacks are refreshed via module refs per check.
+function bindUpdaterListeners(): void {
+    if (listenersBound) return;
+    listenersBound = true;
 
     autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = true;
 
-    autoUpdater.once("update-available", (info: UpdateInfo) => {
-        onDownloading(info.version);
+    autoUpdater.on("update-available", (info: UpdateInfo) => {
+        onDownloadingCb(info.version);
     });
-
-    autoUpdater.once("update-downloaded", (info: UpdateInfo) => {
+    autoUpdater.on("update-downloaded", (info: UpdateInfo) => {
         pendingVersion = info.version;
-        onReady(info.version);
+        onReadyCb(info.version);
     });
-
-    autoUpdater.removeAllListeners("error");
     autoUpdater.on("error", (err: Error) => {
         logger.error("[updater] error:", err.message);
     });
+}
+
+export function checkForUpdates(onDownloading: (version: string) => void, onReady: (version: string) => void): void {
+    if (isDev) return;
+
+    onDownloadingCb = onDownloading;
+    onReadyCb = onReady;
+    bindUpdaterListeners();
 
     autoUpdater.checkForUpdates().catch((err: unknown) => {
         logger.error("[updater] check failed:", err);
@@ -51,16 +61,10 @@ export async function manualCheck(
         return;
     }
 
-    autoUpdater.autoDownload = true;
-    autoUpdater.autoInstallOnAppQuit = true;
-    autoUpdater.removeAllListeners("update-available");
-    autoUpdater.once("update-available", (info: UpdateInfo) => {
-        onDownloading(info.version);
-    });
-    autoUpdater.once("update-downloaded", (info: UpdateInfo) => {
-        pendingVersion = info.version;
-        onReady(info.version);
-    });
+    onDownloadingCb = onDownloading;
+    onReadyCb = onReady;
+    bindUpdaterListeners();
+
     try {
         await autoUpdater.checkForUpdates();
     } catch (err: unknown) {
