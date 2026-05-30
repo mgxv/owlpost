@@ -147,7 +147,7 @@ Icons (back, forward, find, preferences) are React Heroicons mounted into empty 
 
 `electron-findbar` creates a child `BrowserWindow` positioned over the Gmail view. Configuration (theme, position, background color) is set once at module init via `Findbar.setDefaultTheme`, `Findbar.setDefaultBoundsHandler`, and `Findbar.setDefaultWindowHandler`. `Cmd+F` triggers it via the app menu accelerator; the magnifying glass button in the custom titlebar sends `tb:open-find` via IPC.
 
-When `nativeTheme` fires its `updated` event, `gmail.ts` immediately syncs the findbar window's background color so it stays consistent while the bar is open.
+`Findbar.setDefaultWindowHandler` runs each time the bar opens and reads `nativeTheme.shouldUseDarkColors` at that moment, so the findbar matches the current theme every time it is shown. It does not live-update if the theme changes while the bar is already open.
 
 ### Error page
 
