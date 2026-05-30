@@ -65,7 +65,7 @@ owlpost/
 │   │   ├── shared.ts                 PRELOAD_GMAIL path, openExternal, GMAIL_ALLOWED_HOSTS, WindowState, clampToDisplays
 │   │   ├── gmail.ts                  Gmail window — two WebContentsViews, zoom, script injection, findbar, window-state persistence
 │   │   ├── compose.ts                Compose window — reuses blank window, opens new window per mailto: URL, window-state persistence
-│   │   └── prefs.ts                  Preferences window (eager init, hidden until toggled)
+│   │   └── prefs.ts                  Preferences window (lazily created on first toggle)
 │   │
 │   ├── ipc/                          IPC handler registration
 │   │   ├── gmail.ts                  Titlebar navigation, findbar, notifications (with window focus on click), and Gmail injected-script events
