@@ -1,6 +1,8 @@
 /// <reference path="./global.d.ts" />
 import { isInboxListView, extractUnreadCount, looksLikeUnknownCount, redactEmail } from "./title-parser";
 
+const BADGE_DEBOUNCE_MS = 250;
+
 (function () {
     try {
         if (!window.__owlpost__) return;
@@ -9,6 +11,7 @@ import { isInboxListView, extractUnreadCount, looksLikeUnknownCount, redactEmail
         owl.onReady(() => {
             let lastCount = -1;
             let warnedFormat = false;
+            let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
             function readCount(): number | null {
                 if (!isInboxListView(location.hash || "")) return null;
@@ -22,12 +25,20 @@ import { isInboxListView, extractUnreadCount, looksLikeUnknownCount, redactEmail
                 return 0;
             }
 
-            function tick(): void {
+            function emitCount(): void {
                 const count = readCount();
                 if (count !== null && count !== lastCount) {
                     lastCount = count;
                     owl.emit("unread-count", count);
                 }
+            }
+
+            function tick(): void {
+                if (debounceTimer !== null) clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    debounceTimer = null;
+                    emitCount();
+                }, BADGE_DEBOUNCE_MS);
             }
 
             const titleEl = document.querySelector("title");
@@ -39,7 +50,7 @@ import { isInboxListView, extractUnreadCount, looksLikeUnknownCount, redactEmail
                 });
             }
             window.addEventListener("hashchange", tick);
-            tick();
+            emitCount();
         });
     } catch (e) {
         try {

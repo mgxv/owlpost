@@ -14,6 +14,7 @@ import { getPrefsWindow } from "../windows/prefs";
 import { DEFAULTS, setPref, type Prefs } from "../core/store";
 import { resetWindowState } from "../windows/gmail";
 import { resetComposeState } from "../windows/compose";
+import { logger } from "../core/logger";
 
 export function registerSystemIpc(markQuitting: () => void): void {
     ipcMain.handle(IPC_UPDATE_CHECK, async () => {
@@ -30,20 +31,37 @@ export function registerSystemIpc(markQuitting: () => void): void {
     });
 
     ipcMain.handle(IPC_UPDATE_INSTALL, () => {
-        markQuitting();
-        installUpdate();
+        try {
+            markQuitting();
+            installUpdate();
+        } catch (e) {
+            logger.error("[system] update install failed:", e);
+        }
     });
 
     ipcMain.handle(IPC_UPDATE_PENDING, () => getPendingVersion());
 
     ipcMain.handle(IPC_APP_RESET, async () => {
-        await session.defaultSession.clearStorageData();
-        await session.defaultSession.clearCache();
-        await session.fromPartition("persist:prefs").clearStorageData();
-        await session.fromPartition("persist:prefs").clearCache();
-        (Object.keys(DEFAULTS) as (keyof Prefs)[]).forEach((k) => {
-            setPref(k, DEFAULTS[k] as never);
-        });
+        const clears = await Promise.allSettled([
+            session.defaultSession.clearStorageData(),
+            session.defaultSession.clearCache(),
+            session.fromPartition("persist:prefs").clearStorageData(),
+            session.fromPartition("persist:prefs").clearCache(),
+        ]);
+        for (const result of clears) {
+            if (result.status === "rejected") {
+                logger.error("[system] app reset — clear failed:", result.reason);
+            }
+        }
+
+        try {
+            (Object.keys(DEFAULTS) as (keyof Prefs)[]).forEach((k) => {
+                setPref(k, DEFAULTS[k] as never);
+            });
+        } catch (e) {
+            logger.error("[system] app reset — pref reset failed:", e);
+        }
+
         markQuitting();
         app.relaunch();
         app.quit();

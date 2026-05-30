@@ -16,9 +16,19 @@ import {
     type WindowState,
 } from "./shared";
 import { extractAccount } from "./window-url";
+import { describeLoadError } from "../core/net-errors";
 
 const WINDOW_DEFAULTS: WindowState = { width: 1200, height: 800 };
 const PRELOAD_TITLEBAR = path.join(__dirname, "../preload/titlebar.js");
+
+const GMAIL_BG_DARK = "#1f1f1f";
+const GMAIL_BG_LIGHT = "#ffffff";
+
+function resolveGmailBackground(): string {
+    const theme = getPref("systemTheme");
+    const dark = theme === "dark" || (theme === "system" && nativeTheme.shouldUseDarkColors);
+    return dark ? GMAIL_BG_DARK : GMAIL_BG_LIGHT;
+}
 
 Findbar.setDefaultTheme("system");
 Findbar.setDefaultBoundsHandler((parent, bar) => ({
@@ -28,7 +38,7 @@ Findbar.setDefaultBoundsHandler((parent, bar) => ({
     height: bar.height,
 }));
 Findbar.setDefaultWindowHandler((win) => {
-    win.setBackgroundColor(nativeTheme.shouldUseDarkColors ? "#1f1f1f" : "#ffffff");
+    win.setBackgroundColor(nativeTheme.shouldUseDarkColors ? GMAIL_BG_DARK : GMAIL_BG_LIGHT);
 });
 
 function loadTitlebar(wc: WebContents): void {
@@ -217,6 +227,7 @@ export function createGmailWindow(windowStatePath: string, isQuitting: () => boo
         minWidth: 800,
         minHeight: 600,
         title: "Owlpost",
+        backgroundColor: resolveGmailBackground(),
         titleBarStyle: isMac ? "hiddenInset" : "default",
         ...(isMac ? { trafficLightPosition: { x: 12, y: 10 } } : {}),
         webPreferences: {
@@ -257,7 +268,7 @@ export function createGmailWindow(windowStatePath: string, isQuitting: () => boo
         if (!isMainFrame) return;
         if (errorCode === -3) return; // ERR_ABORTED — user navigated away before load completed
         logger.error("[gmail] did-fail-load:", errorCode, errorDescription);
-        loadErrorPage(gmailView.webContents, errorDescription);
+        loadErrorPage(gmailView.webContents, describeLoadError(errorCode, errorDescription));
     });
 
     attachNavigationHandlers(gmailView.webContents);
